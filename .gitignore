@@ -1,0 +1,24 @@
+# Generated files
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Config files
+.env
+/config.toml
+
+# Google Cloud authentication
+credentials.json
+*.json
+
+# macOS
+.DS_Store
+
+# Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Debug files
+*.log
