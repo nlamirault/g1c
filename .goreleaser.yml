@@ -1,0 +1,41 @@
+---
+before:
+  hooks:
+    - rustup default stable
+    - cargo install --locked cargo-zigbuild
+    - cargo fetch --locked
+
+builds:
+  - builder: rust
+    targets:
+      - x86_64-unknown-linux-gnu
+      - x86_64-apple-darwin
+      - x86_64-pc-windows-gnu
+      - aarch64-unknown-linux-gnu
+      - aarch64-apple-darwin
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^ci:'
+      - '^test:'
+      - '^deps:'
+      - '^bump:'
+      - '^Merge pull request'
+      - '^Merge branch'
+
+universal_binaries:
+  - replace: true
+
+brews:
+  - name: g1c
+    homepage: https://github.com/nlamirault/g1c
+    description: g1c is Google Cloud Instances Terminal UI Manager. Inspired by k9s and e1s.
+    tap:
+      owner: nlamirault
+      name: homebrew-tap
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
