@@ -28,6 +28,7 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+      - '^ci:'
 
 universal_binaries:
   - replace: true
@@ -78,7 +79,7 @@ nfpms:
 
 brews:
   - repository:
-      owner: g1c
+      owner: nlamirault
       name: homebrew-tap
       token: "{{ .Env.GH_PAT }}"
     directory: Formula
