@@ -1,4 +1,11 @@
 ---
+# See: https://github.com/goreleaser/example-rust/blob/main/.goreleaser.yaml
+
+version: 2
+
+# Project name should ideally match the project name in your Cargo.toml.
+project_name: g1c
+
 before:
   hooks:
     - rustup default stable
@@ -14,28 +21,78 @@ builds:
       - aarch64-unknown-linux-gnu
       - aarch64-apple-darwin
 
+# Changelog configuration (will be in the github release).
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^ci:'
-      - '^test:'
-      - '^deps:'
-      - '^bump:'
-      - '^Merge pull request'
-      - '^Merge branch'
+      - "^docs:"
+      - "^test:"
 
 universal_binaries:
   - replace: true
 
+# Enables source archives.
+source:
+  enabled: true
+
+# Creates archives for each target.
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+
+# Creates Linux packages.
+nfpms:
+  - file_name_template: "{{ .ConventionalFileName }}"
+    maintainer: Nicolas Lamirault <nicolas.lamirault@gmail.com>
+    formats:
+      - deb
+      - apk
+      - rpm
+
+# # SBOMs for the archives.
+# sboms:
+#   - artifacts: archive
+
+# # Sign binaries with cosign.
+# signs:
+#   - cmd: cosign
+#     certificate: "${artifact}.pem"
+#     args:
+#       - sign-blob
+#       - "--output-certificate=${certificate}"
+#       - "--output-signature=${signature}"
+#       - "${artifact}"
+#       - "--yes"
+#     artifacts: checksum
+
 brews:
-  - name: g1c
+  - repository:
+      owner: g1c
+      name: homebrew-tap
+      token: "{{ .Env.GH_PAT }}"
+    directory: Formula
     homepage: https://github.com/nlamirault/g1c
     description: g1c is Google Cloud Instances Terminal UI Manager. Inspired by k9s and e1s.
-    tap:
-      owner: nlamirault
-      name: homebrew-tap
+    license: Apache v2
 
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
+
+# A footer to add to all releases.
+# release:
+#   footer: >-
+
+#     ---
+
+#     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
