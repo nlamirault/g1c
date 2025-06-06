@@ -36,9 +36,22 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area: Rect)
         .split(popup_area);
     
     // Render title
+    // Get status emoji
+    let status_emoji = match instance.status.as_str() {
+        "RUNNING" => "🟢",
+        "TERMINATED" => "🔴",
+        "STOPPING" => "🟠",
+        "PROVISIONING" => "🟡",
+        "STAGING" => "🔄",
+        "SUSPENDED" => "💤",
+        "REPAIRING" => "🟡",
+        "PENDING" => "🟡",
+        _ => "❓",
+    };
+    
     let title = Paragraph::new(Spans::from(vec![
         Span::styled(
-            format!("Instance: {} ({})", instance.name, instance.id),
+            format!("Instance: {} ({}) {}", instance.name, instance.id, status_emoji),
             Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
         ),
     ]));
@@ -67,11 +80,24 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area: Rect)
 
 /// Render the basic information table
 fn render_basic_info<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area: Rect) {
+    // Get status emoji
+    let status_emoji = match instance.status.as_str() {
+        "RUNNING" => "🟢",
+        "TERMINATED" => "🔴",
+        "STOPPING" => "🟠",
+        "PROVISIONING" => "🟡",
+        "STAGING" => "🔄",
+        "SUSPENDED" => "💤",
+        "REPAIRING" => "🟡",
+        "PENDING" => "🟡",
+        _ => "❓",
+    };
+    
     let rows = vec![
         Row::new(vec![
             Cell::from("Status"),
             Cell::from(Span::styled(
-                instance.status.clone(),
+                format!("{} {}", status_emoji, instance.status.clone()),
                 status_style(&instance.status),
             )),
         ]),
@@ -152,8 +178,11 @@ fn status_style(status: &str) -> Style {
         "RUNNING" => Style::default().fg(Color::Green),
         "TERMINATED" => Style::default().fg(Color::Red),
         "STOPPING" => Style::default().fg(Color::Yellow),
-        "PROVISIONING" => Style::default().fg(Color::Magenta),
+        "PROVISIONING" => Style::default().fg(Color::Yellow),
         "STAGING" => Style::default().fg(Color::Cyan),
+        "SUSPENDED" => Style::default().fg(Color::Gray),
+        "REPAIRING" => Style::default().fg(Color::Yellow),
+        "PENDING" => Style::default().fg(Color::Yellow),
         _ => Style::default(),
     }
 }

@@ -126,13 +126,13 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
             ),
         ]),
         Spans::from(vec![
-            Span::styled("✅ Running: ", Style::default().fg(Color::Green)),
+            Span::styled("🟢 Running: ", Style::default().fg(Color::Green)),
             Span::styled(running_count.to_string(), Style::default().fg(Color::Green)),
             Span::raw("  "),
-            Span::styled("⏹️ Stopped: ", Style::default().fg(Color::Red)),
+            Span::styled("🔴 Stopped: ", Style::default().fg(Color::Red)),
             Span::styled(stopped_count.to_string(), Style::default().fg(Color::Red)),
             Span::raw("  "),
-            Span::styled("⚠️ Other: ", Style::default().fg(Color::Yellow)),
+            Span::styled("❓ Other: ", Style::default().fg(Color::Yellow)),
             Span::styled(other_count.to_string(), Style::default().fg(Color::Yellow)),
         ]),
         Spans::from(Span::raw("")),
@@ -256,14 +256,17 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
     let mut items = vec![];
 
     for (_i, instance) in state.instances.iter().enumerate() {
-        // Determine status color
-        let status_color = match instance.status.as_str() {
-            "RUNNING" => Color::Green,
-            "TERMINATED" => Color::Red,
-            "STOPPING" => Color::Yellow,
-            "PROVISIONING" => Color::Magenta,
-            "STAGING" => Color::Cyan,
-            _ => Color::Gray,
+        // Determine status color and display text
+        let (status_color, status_display) = match instance.status.as_str() {
+            "RUNNING" => (Color::Green, "🟢 RUNNING"),
+            "TERMINATED" => (Color::Red, "🔴 TERMINATED"),
+            "STOPPING" => (Color::Yellow, "🟠 STOPPING"),
+            "PROVISIONING" => (Color::Magenta, "🟡 PROVISIONING"),
+            "STAGING" => (Color::Cyan, "🔄 STAGING"),
+            "SUSPENDED" => (Color::Gray, "💤 SUSPENDED"),
+            "REPAIRING" => (Color::Yellow, "🟡 REPAIRING"),
+            "PENDING" => (Color::Yellow, "🟡 PENDING"),
+            _ => (Color::Gray, "❓ UNKNOWN"),
         };
 
         // Get network name (if available)
@@ -276,7 +279,7 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
             instance.name.clone()
         };
 
-        let instance_status = instance.status.clone();
+        let instance_status = status_display.to_string();
 
         let machine_type = if instance.machine_type.len() > machine_type_width {
             format!("{}…", &instance.machine_type[0..machine_type_width - 1])

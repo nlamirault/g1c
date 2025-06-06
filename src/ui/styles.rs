@@ -88,8 +88,11 @@ impl Theme {
             "RUNNING" => Style::default().fg(self.success),
             "TERMINATED" => Style::default().fg(self.error),
             "STOPPING" => Style::default().fg(self.warning),
-            "PROVISIONING" => Style::default().fg(self.info),
+            "PROVISIONING" => Style::default().fg(self.warning),
             "STAGING" => Style::default().fg(self.secondary),
+            "SUSPENDED" => Style::default().fg(Color::DarkGray),
+            "REPAIRING" => Style::default().fg(self.warning),
+            "PENDING" => Style::default().fg(self.warning),
             _ => Style::default().fg(self.foreground),
         }
     }
