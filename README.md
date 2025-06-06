@@ -1,4 +1,4 @@
-# g1c - Google Cloud Instances TUI
+# g1c - Google Cloud Instances Terminal UI Manager
 
 A terminal user interface for monitoring and managing Google Cloud Instances, inspired by
 [k9s](https://github.com/derailed/k9s) for Kubernetes, [e1s](https://github.com/keidarcy/e1s) for AWS EC2.
