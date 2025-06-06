@@ -1,7 +1,6 @@
 # Generated files
 /target/
 **/*.rs.bk
-Cargo.lock
 
 # Config files
 .env
