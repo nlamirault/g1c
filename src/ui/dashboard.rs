@@ -16,10 +16,10 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rect) {
         .direction(Direction::Vertical)
         .margin(1)
         .constraints([
-            Constraint::Length(3),  // For title and filter bar
-            Constraint::Length(8),  // For overview panel
-            Constraint::Min(0),     // For instance list
-            Constraint::Length(1),  // For status bar
+            Constraint::Length(3),   // For title and filter bar
+            Constraint::Length(8),   // For overview panel
+            Constraint::Min(10),     // For instance list - use all remaining space
+            Constraint::Length(1),   // For status bar
         ])
         .split(area);
 
@@ -29,7 +29,7 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rect) {
     // Render overview panel
     render_overview_panel(frame, state, main_chunks[1]);
 
-    // Render instances list
+    // Render instances list - use all remaining space
     render_instance_list(frame, state, main_chunks[2]);
 
     // Render status bar
@@ -154,7 +154,7 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
 
 /// Render the instance list
 fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rect) {
-    // Create a block for the list
+    // Create a block for the list - make sure to use all available space
     let block = Block::default()
         .borders(Borders::ALL)
         .title("💻 Instances List")
@@ -186,52 +186,64 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
         return;
     }
 
+    // Calculate the available width for the table
+    let available_width = area.width as usize - 16; // Subtract borders, margins, and column separators
+    
+    // Define column widths proportionally to available space
+    let name_width = (available_width * 18) / 100;
+    let status_width = (available_width * 10) / 100;
+    let machine_type_width = (available_width * 18) / 100;
+    let zone_width = (available_width * 15) / 100;
+    let network_width = (available_width * 12) / 100;
+    let internal_ip_width = (available_width * 14) / 100;
+    let external_ip_width = (available_width * 13) / 100;
+
     // Create header row for the list
     let header = ListItem::new(Spans::from(vec![
         Span::styled(
-            "NAME",
+            format!("{:<width$}", "NAME", width = name_width),
             Style::default()
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
         ),
-        Span::raw(" | "),
+        Span::raw("│ "),
         Span::styled(
-            "STATUS",
+            format!("{:<width$}", "STATUS", width = status_width),
             Style::default()
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
         ),
-        Span::raw(" | "),
+        Span::raw("│ "),
         Span::styled(
-            "MACHINE TYPE",
+            format!("{:<width$}", "MACHINE TYPE", width = machine_type_width),
             Style::default()
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
         ),
-        Span::raw(" | "),
+        Span::raw("│ "),
         Span::styled(
-            "ZONE",
+            format!("{:<width$}", "ZONE", width = zone_width),
             Style::default()
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
         ),
-        Span::raw(" | "),
+        Span::raw("│ "),
         Span::styled(
-            "NETWORK",
+            format!("{:<width$}", "NETWORK", width = network_width),
             Style::default()
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
         ),
-        Span::raw(" | "),
+        Span::raw("│ "),
         Span::styled(
-            "INTERNAL IP",
+            format!("{:<width$}", "INTERNAL IP", width = internal_ip_width),
             Style::default()
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
         ),
-        Span::raw(" | "),
+        Span::raw("│ "),
         Span::styled(
-            "EXTERNAL IP",
+            format!("{:<width$}", "EXTERNAL IP", width = external_ip_width),
             Style::default()
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
@@ -254,37 +266,61 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
 
         // Get network name (if available)
         let network = instance.network.as_deref().unwrap_or("-");
+        
+        // Format strings to limit length and avoid overflow
+        let instance_name = if instance.name.len() > name_width {
+            format!("{}…", &instance.name[0..name_width-1])
+        } else {
+            instance.name.clone()
+        };
+        
+        let instance_status = instance.status.clone();
+        
+        let machine_type = if instance.machine_type.len() > machine_type_width {
+            format!("{}…", &instance.machine_type[0..machine_type_width-1])
+        } else {
+            instance.machine_type.clone()
+        };
+        
+        let zone = if instance.zone.len() > zone_width {
+            format!("{}…", &instance.zone[0..zone_width-1])
+        } else {
+            instance.zone.clone()
+        };
+        
+        let network_str = if network.len() > network_width {
+            format!("{}…", &network[0..network_width-1])
+        } else {
+            network.to_string()
+        };
+        
+        let internal_ip = instance.internal_ip.as_deref().unwrap_or("-").to_string();
+        let external_ip = instance.external_ip.as_deref().unwrap_or("-").to_string();
             
-        // Create list item
+        // Create list item with dynamic width columns
         let item = ListItem::new(Spans::from(vec![
-            Span::raw(format!("{:<20}", instance.name)),
-            Span::raw(" | "),
+            Span::raw(format!("{:<width$}", instance_name, width = name_width)),
+            Span::raw("│ "),
             Span::styled(
-                format!("{:<10}", instance.status),
+                format!("{:<width$}", instance_status, width = status_width),
                 Style::default().fg(status_color),
             ),
-            Span::raw(" | "),
-            Span::raw(format!("{:<15}", instance.machine_type)),
-            Span::raw(" | "),
-            Span::raw(format!("{:<15}", instance.zone)),
-            Span::raw(" | "),
-            Span::raw(format!("{:<15}", network)),
-            Span::raw(" | "),
-            Span::raw(format!(
-                "{:<15}",
-                instance.internal_ip.as_deref().unwrap_or("-")
-            )),
-            Span::raw(" | "),
-            Span::raw(format!(
-                "{:<15}",
-                instance.external_ip.as_deref().unwrap_or("-")
-            )),
+            Span::raw("│ "),
+            Span::raw(format!("{:<width$}", machine_type, width = machine_type_width)),
+            Span::raw("│ "),
+            Span::raw(format!("{:<width$}", zone, width = zone_width)),
+            Span::raw("│ "),
+            Span::raw(format!("{:<width$}", network_str, width = network_width)),
+            Span::raw("│ "),
+            Span::raw(format!("{:<width$}", internal_ip, width = internal_ip_width)),
+            Span::raw("│ "),
+            Span::raw(format!("{:<width$}", external_ip, width = external_ip_width)),
         ]));
 
         items.push(item);
     }
 
-    // Create the List widget
+    // Create a List widget - ensure it takes all available space
     let list = List::new(items)
         .block(block)
         .highlight_style(
@@ -292,14 +328,15 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
                 .bg(Color::DarkGray)
                 .add_modifier(Modifier::BOLD),
         )
-        .highlight_symbol("> ");
+        .highlight_symbol("> ")
+        .style(Style::default().fg(Color::White)); // Add default style for all list items
 
-    // Render the list with the current selection
-    frame.render_stateful_widget(
-        list,
-        area,
-        &mut ratatui::widgets::ListState::default().with_selected(Some(state.selected_index)),
-    );
+    // Create a ListState with the current selection
+    let mut list_state = ratatui::widgets::ListState::default();
+    list_state.select(Some(state.selected_index));
+    
+    // Render the list with the current selection, ensuring it uses all available space
+    frame.render_stateful_widget(list, area, &mut list_state);
 }
 
 /// Render the status bar

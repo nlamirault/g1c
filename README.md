@@ -1,8 +1,9 @@
 # g1c - Google Cloud Instances TUI
 
-A terminal user interface for monitoring and managing Google Cloud Instances, inspired by [k9s](https://github.com/derailed/k9s) for Kubernetes, [e1s](https://github.com/keidarcy/e1s) for AWS EC2, and [e2c](https://github.com/nlamirault/e2c).
+A terminal user interface for monitoring and managing Google Cloud Instances, inspired by
+[k9s](https://github.com/derailed/k9s) for Kubernetes, [e1s](https://github.com/keidarcy/e1s) for AWS EC2.
 
-![g1c Screenshot](docs/screenshots/g1c-screenshot.png)
+![g1c Screenshot](assets/main-view.png)
 
 ## Features
 
@@ -27,7 +28,7 @@ A terminal user interface for monitoring and managing Google Cloud Instances, in
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/g1c.git
+git clone https://github.com/nlamirault/g1c.git
 cd g1c
 
 # Build and install
@@ -154,33 +155,10 @@ make test
 make docs
 ```
 
-### Project Structure
-
-- `src/`: Source code
-  - `main.rs`: Entry point
-  - `app.rs`: Application state and logic
-  - `cloud/`: Google Cloud API integration
-  - `ui/`: Terminal UI components
-  - `config.rs`: Configuration handling
-  - `error.rs`: Error types
-
-## License
-
-MIT
-
-## Acknowledgements
-
-- [ratatui](https://github.com/ratatui-org/ratatui) - Terminal UI library
-- [clap](https://github.com/clap-rs/clap) - Command line argument parsing
-- [tokio](https://github.com/tokio-rs/tokio) - Asynchronous runtime
-- [k9s](https://github.com/derailed/k9s) - Inspiration for the UI
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## License
+
+Apache Version 2.0
