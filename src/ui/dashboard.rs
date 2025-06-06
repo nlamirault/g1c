@@ -47,7 +47,7 @@ fn render_title_bar<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rec
         .split(area);
 
     // Title
-    let title = Paragraph::new("Google Cloud Instances (G1C)").style(
+    let title = Paragraph::new("🌩️  Google Cloud Instances (G1C)").style(
         Style::default()
             .fg(Color::Cyan)
             .add_modifier(Modifier::BOLD),
@@ -56,11 +56,11 @@ fn render_title_bar<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rec
 
     // Filter bar
     let filter_text = if state.filter_mode {
-        format!("Filter: {}", state.filter)
+        format!("🔍 Filter: {}", state.filter)
     } else if state.search_mode {
-        format!("Search: {}", state.search)
+        format!("🔎 Search: {}", state.search)
     } else {
-        "Press 'f' to filter, '/' to search".to_string()
+        "🔍 Press 'f' to filter, '/' to search".to_string()
     };
 
     let filter_style = if state.filter_mode || state.search_mode {
@@ -79,7 +79,7 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
     // Create a block for the overview panel
     let block = Block::default()
         .borders(Borders::ALL)
-        .title("Overview")
+        .title("📈 Overview")
         .title_style(
             Style::default()
                 .fg(Color::White)
@@ -104,39 +104,39 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
     
     let content = vec![
         Spans::from(vec![
-            Span::styled("Project ID: ", Style::default().fg(Color::Blue)),
+            Span::styled("🔑 Project ID: ", Style::default().fg(Color::Blue)),
             Span::raw(&state.project_id),
         ]),
         Spans::from(vec![
-            Span::styled("Region: ", Style::default().fg(Color::Blue)),
+            Span::styled("🌎 Region: ", Style::default().fg(Color::Blue)),
             Span::raw(&state.region),
         ]),
         Spans::from(vec![
-            Span::styled("gcloud CLI: ", Style::default().fg(Color::Blue)),
+            Span::styled("🖥️  gcloud CLI: ", Style::default().fg(Color::Blue)),
             Span::raw(&state.cli_version),
         ]),
         Spans::from(Span::raw("")),
         Spans::from(vec![
-            Span::styled("Total Instances: ", Style::default().fg(Color::Green)),
+            Span::styled("📊 Total Instances: ", Style::default().fg(Color::Green)),
             Span::styled(
                 instance_count.to_string(), 
                 Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
             ),
         ]),
         Spans::from(vec![
-            Span::styled("  Running: ", Style::default().fg(Color::Green)),
+            Span::styled("  ✅ Running: ", Style::default().fg(Color::Green)),
             Span::styled(
                 running_count.to_string(), 
                 Style::default().fg(Color::Green)
             ),
             Span::raw("  "),
-            Span::styled("Stopped: ", Style::default().fg(Color::Red)),
+            Span::styled("⏹️ Stopped: ", Style::default().fg(Color::Red)),
             Span::styled(
                 stopped_count.to_string(), 
                 Style::default().fg(Color::Red)
             ),
             Span::raw("  "),
-            Span::styled("Other: ", Style::default().fg(Color::Yellow)),
+            Span::styled("⚠️ Other: ", Style::default().fg(Color::Yellow)),
             Span::styled(
                 other_count.to_string(), 
                 Style::default().fg(Color::Yellow)
@@ -157,7 +157,7 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
     // Create a block for the list
     let block = Block::default()
         .borders(Borders::ALL)
-        .title("Instances List")
+        .title("💻 Instances List")
         .title_style(
             Style::default()
                 .fg(Color::White)
@@ -306,12 +306,12 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
 fn render_status_bar<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rect) {
     let selected_text = if !state.instances.is_empty() {
         let instance = &state.instances[state.selected_index];
-        format!("Selected: {} ({})", instance.name, instance.id)
+        format!("🔍 Selected: {} ({})", instance.name, instance.id)
     } else {
-        "No instances selected".to_string()
+        "🔍 No instances selected".to_string()
     };
 
-    let help_hint = "Press '?' for help";
+    let help_hint = "❓ Press '?' for help";
 
     let text = Spans::from(vec![
         Span::raw(selected_text),
