@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use std::process::Command;
 use tracing::{debug, info, warn};
+use regex::Regex;
 
 /// Get the default project ID from gcloud config
 pub fn get_default_project() -> Result<String> {
@@ -28,6 +29,33 @@ pub fn get_default_project() -> Result<String> {
     
     debug!("Default project: {}", project_id);
     Ok(project_id)
+}
+
+/// Get the version of the gcloud CLI
+pub fn get_gcloud_version() -> Result<String> {
+    // Run gcloud --version command
+    let output = Command::new("gcloud")
+        .arg("--version")
+        .output()
+        .context("Failed to execute gcloud --version command. Is gcloud CLI installed?")?;
+    
+    if !output.status.success() {
+        let error = String::from_utf8_lossy(&output.stderr);
+        return Err(anyhow::anyhow!("gcloud CLI check failed: {}", error));
+    }
+    
+    // Parse output to extract Google Cloud SDK version
+    let version_output = String::from_utf8_lossy(&output.stdout);
+    let re = Regex::new(r"Google Cloud SDK ([\d.]+)").unwrap();
+    
+    if let Some(captures) = re.captures(&version_output) {
+        if let Some(version) = captures.get(1) {
+            return Ok(version.as_str().to_string());
+        }
+    }
+    
+    // Return a simplified version if regex fails
+    Ok("Unknown".to_string())
 }
 
 /// Check if gcloud CLI is installed and authenticated

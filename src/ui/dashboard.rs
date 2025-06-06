@@ -12,24 +12,28 @@ use super::UiState;
 /// Render the main dashboard view
 pub fn render<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rect) {
     // Create the layout
-    let chunks = Layout::default()
+    let main_chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
         .constraints([
-            Constraint::Length(3), // For title and filter bar
-            Constraint::Min(0),    // For instance list
-            Constraint::Length(1), // For status bar
+            Constraint::Length(3),  // For title and filter bar
+            Constraint::Length(8),  // For overview panel
+            Constraint::Min(0),     // For instance list
+            Constraint::Length(1),  // For status bar
         ])
         .split(area);
 
     // Render title and filter bar
-    render_title_bar(frame, state, chunks[0]);
+    render_title_bar(frame, state, main_chunks[0]);
+
+    // Render overview panel
+    render_overview_panel(frame, state, main_chunks[1]);
 
     // Render instances list
-    render_instance_list(frame, state, chunks[1]);
+    render_instance_list(frame, state, main_chunks[2]);
 
     // Render status bar
-    render_status_bar(frame, state, chunks[2]);
+    render_status_bar(frame, state, main_chunks[3]);
 }
 
 /// Render the title and filter bar
@@ -70,12 +74,90 @@ fn render_title_bar<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rec
     frame.render_widget(filter_bar, chunks[1]);
 }
 
+/// Render the overview panel
+fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rect) {
+    // Create a block for the overview panel
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title("Overview")
+        .title_style(
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
+        );
+
+    // Create the content
+    let instance_count = state.instances.len();
+    
+    // Count instances by status
+    let mut running_count = 0;
+    let mut stopped_count = 0;
+    let mut other_count = 0;
+    
+    for instance in &state.instances {
+        match instance.status.as_str() {
+            "RUNNING" => running_count += 1,
+            "TERMINATED" => stopped_count += 1,
+            _ => other_count += 1,
+        }
+    }
+    
+    let content = vec![
+        Spans::from(vec![
+            Span::styled("Project ID: ", Style::default().fg(Color::Blue)),
+            Span::raw(&state.project_id),
+        ]),
+        Spans::from(vec![
+            Span::styled("Region: ", Style::default().fg(Color::Blue)),
+            Span::raw(&state.region),
+        ]),
+        Spans::from(vec![
+            Span::styled("gcloud CLI: ", Style::default().fg(Color::Blue)),
+            Span::raw(&state.cli_version),
+        ]),
+        Spans::from(Span::raw("")),
+        Spans::from(vec![
+            Span::styled("Total Instances: ", Style::default().fg(Color::Green)),
+            Span::styled(
+                instance_count.to_string(), 
+                Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
+            ),
+        ]),
+        Spans::from(vec![
+            Span::styled("  Running: ", Style::default().fg(Color::Green)),
+            Span::styled(
+                running_count.to_string(), 
+                Style::default().fg(Color::Green)
+            ),
+            Span::raw("  "),
+            Span::styled("Stopped: ", Style::default().fg(Color::Red)),
+            Span::styled(
+                stopped_count.to_string(), 
+                Style::default().fg(Color::Red)
+            ),
+            Span::raw("  "),
+            Span::styled("Other: ", Style::default().fg(Color::Yellow)),
+            Span::styled(
+                other_count.to_string(), 
+                Style::default().fg(Color::Yellow)
+            ),
+        ]),
+        Spans::from(Span::raw("")),
+    ];
+
+    let paragraph = Paragraph::new(content)
+        .block(block)
+        .alignment(ratatui::layout::Alignment::Left);
+
+    frame.render_widget(paragraph, area);
+}
+
 /// Render the instance list
 fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rect) {
     // Create a block for the list
     let block = Block::default()
         .borders(Borders::ALL)
-        .title("Instances")
+        .title("Instances List")
         .title_style(
             Style::default()
                 .fg(Color::White)
@@ -121,7 +203,7 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
         ),
         Span::raw(" | "),
         Span::styled(
-            "TYPE",
+            "MACHINE TYPE",
             Style::default()
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
@@ -129,6 +211,20 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
         Span::raw(" | "),
         Span::styled(
             "ZONE",
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .fg(Color::Blue),
+        ),
+        Span::raw(" | "),
+        Span::styled(
+            "NETWORK",
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .fg(Color::Blue),
+        ),
+        Span::raw(" | "),
+        Span::styled(
+            "INTERNAL IP",
             Style::default()
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
@@ -156,6 +252,9 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
             _ => Color::Gray,
         };
 
+        // Get network name (if available)
+        let network = instance.network.as_deref().unwrap_or("-");
+            
         // Create list item
         let item = ListItem::new(Spans::from(vec![
             Span::raw(format!("{:<20}", instance.name)),
@@ -168,6 +267,13 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
             Span::raw(format!("{:<15}", instance.machine_type)),
             Span::raw(" | "),
             Span::raw(format!("{:<15}", instance.zone)),
+            Span::raw(" | "),
+            Span::raw(format!("{:<15}", network)),
+            Span::raw(" | "),
+            Span::raw(format!(
+                "{:<15}",
+                instance.internal_ip.as_deref().unwrap_or("-")
+            )),
             Span::raw(" | "),
             Span::raw(format!(
                 "{:<15}",

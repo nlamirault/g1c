@@ -47,6 +47,12 @@ pub struct UiState {
     search: String,
     /// Current popup confirmation state
     confirmation: Option<Action>,
+    /// Project ID from cloud client
+    project_id: String,
+    /// Region from cloud client
+    region: String,
+    /// gcloud CLI version
+    cli_version: String,
 }
 
 impl UiState {
@@ -62,7 +68,17 @@ impl UiState {
             search_mode: false,
             search: String::new(),
             confirmation: None,
+            project_id: String::new(),
+            region: String::new(),
+            cli_version: String::new(),
         }
+    }
+    
+    /// Update cloud information
+    pub fn update_cloud_info(&mut self, project_id: String, region: String, cli_version: String) {
+        self.project_id = project_id;
+        self.region = region;
+        self.cli_version = cli_version;
     }
 
     /// Update the list of instances
@@ -88,7 +104,9 @@ impl UiState {
             instance.name.to_lowercase().contains(&filter) || 
             instance.status.to_lowercase().contains(&filter) ||
             instance.machine_type.to_lowercase().contains(&filter) ||
-            instance.zone.to_lowercase().contains(&filter)
+            instance.zone.to_lowercase().contains(&filter) ||
+            instance.network.as_ref().map_or(false, |n| n.to_lowercase().contains(&filter)) ||
+            instance.internal_ip.as_ref().map_or(false, |ip| ip.to_lowercase().contains(&filter))
         });
     }
     

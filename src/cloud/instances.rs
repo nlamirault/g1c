@@ -21,6 +21,8 @@ pub struct Instance {
     pub external_ip: Option<String>,
     /// Internal IP address
     pub internal_ip: Option<String>,
+    /// Network name
+    pub network: Option<String>,
     /// Creation timestamp
     pub creation_timestamp: Option<String>,
     /// Description
@@ -55,6 +57,8 @@ struct NetworkInterface {
     network_ip: Option<String>,
     #[serde(rename = "accessConfigs")]
     access_configs: Option<Vec<AccessConfig>>,
+    #[serde(rename = "network")]
+    network: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -83,6 +87,7 @@ impl From<GcloudInstance> for Instance {
     fn from(gcloud_instance: GcloudInstance) -> Self {
         let mut external_ip = None;
         let mut internal_ip = None;
+        let mut network = None;
         
         // Extract IP addresses from network interfaces
         if let Some(network_interfaces) = gcloud_instance.network_interfaces {
@@ -99,6 +104,14 @@ impl From<GcloudInstance> for Instance {
                             external_ip = Some(nat_ip);
                             break;
                         }
+                    }
+                }
+                
+                // Network
+                if let Some(net) = &iface.network {
+                    // Extract the network name from the URL path
+                    if let Some(name) = net.split('/').last() {
+                        network = Some(name.to_string());
                     }
                 }
             }
@@ -145,6 +158,7 @@ impl From<GcloudInstance> for Instance {
             zone,
             external_ip,
             internal_ip,
+            network,
             creation_timestamp: gcloud_instance.creation_timestamp,
             description: gcloud_instance.description,
             metadata,

@@ -7,6 +7,7 @@ use tracing::{debug, info};
 use crate::config::Config;
 
 pub use self::instances::Instance;
+pub use self::auth::get_gcloud_version;
 
 /// Google Cloud API client
 pub struct CloudClient {
@@ -73,5 +74,20 @@ impl CloudClient {
     /// Get detailed information about an instance
     pub async fn get_instance(&self, instance_id: &str) -> Result<Instance> {
         instances::get_instance(&self.project_id, instance_id, self.json_output).await
+    }
+    
+    /// Get the region for this client
+    pub fn get_region(&self) -> &str {
+        &self.region
+    }
+    
+    /// Get the project ID for this client
+    pub fn get_project_id(&self) -> &str {
+        &self.project_id
+    }
+    
+    /// Get the gcloud CLI version
+    pub fn get_cli_version(&self) -> Result<String> {
+        auth::get_gcloud_version()
     }
 }

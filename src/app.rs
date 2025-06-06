@@ -2,7 +2,7 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{Terminal, backend::Backend};
-use tracing::{debug, info};
+use tracing::{debug, info, error};
 
 use crate::cloud::CloudClient;
 use crate::config::Config;
@@ -32,13 +32,19 @@ impl App {
         // Create initial UI state
         let ui_state = UiState::new();
         
-        Ok(Self {
+        // Initialize UI state with cloud client info
+        let mut app = Self {
             config,
             cloud_client,
             ui_state,
             should_quit: false,
             last_refresh: Instant::now(),
-        })
+        };
+        
+        // Update UI state with cloud client info
+        app.update_ui_info();
+        
+        Ok(app)
     }
     
     /// Run the application main loop
@@ -143,7 +149,31 @@ impl App {
         // Update refresh time
         self.last_refresh = Instant::now();
         
+        // Update UI info (region, project, version)
+        self.update_ui_info();
+        
         Ok(())
+    }
+    
+    /// Update UI state with cloud client information
+    fn update_ui_info(&mut self) {
+        // Set project ID
+        let project_id = self.cloud_client.get_project_id().to_string();
+        
+        // Set region
+        let region = self.cloud_client.get_region().to_string();
+        
+        // Try to get CLI version
+        let cli_version = match self.cloud_client.get_cli_version() {
+            Ok(version) => version,
+            Err(e) => {
+                error!("Failed to get CLI version: {}", e);
+                "Unknown".to_string()
+            }
+        };
+        
+        // Update UI state
+        self.ui_state.update_cloud_info(project_id, region, cli_version);
     }
     
     /// Perform an action on an instance
