@@ -1,0 +1,67 @@
+{
+  "extends": [
+    "config:base",
+    ":dependencyDashboard",
+    ":gitSignOff"
+  ],
+  "enabled": true,
+  "timezone": "Europe/Paris",
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Renovate Dashboard",
+  // "gitAuthor": "Nicolas Lamirault <nlamirault@users.noreply.github.com>",
+  // "commitBody": "Signed-off-by: Nicolas Lamirault <nlamirault@users.noreply.github.com>",
+  // Do not notify on closed unmerged PRs
+  "suppressNotifications": ["prIgnoreNotification"],
+  // Do not rebase PRs
+  "rebaseWhen": "conflicted",
+  "assignees": ["@nlamirault"],
+  "reviewersFromCodeOwners": true,
+  "labels": ["kind/renovate", "lifecycle/active", "status/review_needed"],
+  "regexManagers": [
+    {
+      "fileMatch": [".*py$"],
+      "matchStrings": [
+        "datasource=(?<datasource>.*)\\sdepName=(?<depName>.*)\\n.*version:\\s(?<currentValue>.*)"
+      ]
+    }
+  ],
+  "packageRules": [
+    // type
+    {
+      "matchUpdateTypes": ["major"],
+      "labels": ["priority/high"]
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "labels": ["priority/medium"]
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "labels": ["priority/low"]
+    },
+    // {
+    //   "matchUpdateTypes": ["digest"],
+    //   "labels": ["type/digest"]
+    // },
+    {
+      "matchDatasources": ["docker"],
+      "addLabels": ["kind/renovate", "dependency/docker", "lifecycle/active", "status/review_needed", "size/xs"]
+    },
+    {
+      "matchDatasources": ["github-releases", "github-tags"],
+      "addLabels": ["kind/renovate", "dependency/github", "lifecycle/active", "status/review_needed", "size/xs"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "addLabels": ["kind/renovate", "dependency/github", "lifecycle/active", "status/review_needed", "size/xs"]
+    },
+    {
+      "matchDatasources": ["rubygems", "ruby-version"],
+      "addLabels": ["kind/renovate", "dependency/ruby", "lifecycle/active", "status/review_needed", "size/xs"]
+    },
+    {
+      "matchPaths": [".pre-commit-config.yaml"],
+      "addLabels": ["kind/renovate", "dependency/github", "lifecycle/active", "status/review_needed", "size/xs"]
+    }
+  ]
+}
