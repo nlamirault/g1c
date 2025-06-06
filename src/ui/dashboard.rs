@@ -16,10 +16,10 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rect) {
         .direction(Direction::Vertical)
         .margin(1)
         .constraints([
-            Constraint::Length(3),   // For title and filter bar
-            Constraint::Length(8),   // For overview panel
-            Constraint::Min(10),     // For instance list - use all remaining space
-            Constraint::Length(1),   // For status bar
+            Constraint::Length(3), // For title and filter bar
+            Constraint::Length(8), // For overview panel
+            Constraint::Min(10),   // For instance list - use all remaining space
+            Constraint::Length(1), // For status bar
         ])
         .split(area);
 
@@ -88,12 +88,12 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
 
     // Create the content
     let instance_count = state.instances.len();
-    
+
     // Count instances by status
     let mut running_count = 0;
     let mut stopped_count = 0;
     let mut other_count = 0;
-    
+
     for instance in &state.instances {
         match instance.status.as_str() {
             "RUNNING" => running_count += 1,
@@ -101,7 +101,7 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
             _ => other_count += 1,
         }
     }
-    
+
     let content = vec![
         Spans::from(vec![
             Span::styled("🔑 Project ID: ", Style::default().fg(Color::Blue)),
@@ -112,35 +112,28 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
             Span::raw(&state.region),
         ]),
         Spans::from(vec![
-            Span::styled("🖥️  gcloud CLI: ", Style::default().fg(Color::Blue)),
+            Span::styled("🖥️ GCloud CLI: ", Style::default().fg(Color::Blue)),
             Span::raw(&state.cli_version),
         ]),
         Spans::from(Span::raw("")),
         Spans::from(vec![
             Span::styled("📊 Total Instances: ", Style::default().fg(Color::Green)),
             Span::styled(
-                instance_count.to_string(), 
-                Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
+                instance_count.to_string(),
+                Style::default()
+                    .fg(Color::Green)
+                    .add_modifier(Modifier::BOLD),
             ),
         ]),
         Spans::from(vec![
-            Span::styled("  ✅ Running: ", Style::default().fg(Color::Green)),
-            Span::styled(
-                running_count.to_string(), 
-                Style::default().fg(Color::Green)
-            ),
+            Span::styled("✅ Running: ", Style::default().fg(Color::Green)),
+            Span::styled(running_count.to_string(), Style::default().fg(Color::Green)),
             Span::raw("  "),
             Span::styled("⏹️ Stopped: ", Style::default().fg(Color::Red)),
-            Span::styled(
-                stopped_count.to_string(), 
-                Style::default().fg(Color::Red)
-            ),
+            Span::styled(stopped_count.to_string(), Style::default().fg(Color::Red)),
             Span::raw("  "),
             Span::styled("⚠️ Other: ", Style::default().fg(Color::Yellow)),
-            Span::styled(
-                other_count.to_string(), 
-                Style::default().fg(Color::Yellow)
-            ),
+            Span::styled(other_count.to_string(), Style::default().fg(Color::Yellow)),
         ]),
         Spans::from(Span::raw("")),
     ];
@@ -158,8 +151,8 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
     let instance_chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(2),  // For the header (including padding)
-            Constraint::Min(1),     // For the list items
+            Constraint::Length(2), // For the header (including padding)
+            Constraint::Min(1),    // For the list items
         ])
         .split(area);
 
@@ -197,7 +190,7 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
 
     // Calculate the available width for the table
     let available_width = area.width as usize - 20; // Subtract borders, margins, and column separators
-    
+
     // Define column widths proportionally to available space
     let name_width = (available_width * 18) / 100;
     let status_width = (available_width * 10) / 100;
@@ -275,37 +268,37 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
 
         // Get network name (if available)
         let network = instance.network.as_deref().unwrap_or("-");
-        
+
         // Format strings to limit length and avoid overflow
         let instance_name = if instance.name.len() > name_width {
-            format!("{}…", &instance.name[0..name_width-1])
+            format!("{}…", &instance.name[0..name_width - 1])
         } else {
             instance.name.clone()
         };
-        
+
         let instance_status = instance.status.clone();
-        
+
         let machine_type = if instance.machine_type.len() > machine_type_width {
-            format!("{}…", &instance.machine_type[0..machine_type_width-1])
+            format!("{}…", &instance.machine_type[0..machine_type_width - 1])
         } else {
             instance.machine_type.clone()
         };
-        
+
         let zone = if instance.zone.len() > zone_width {
-            format!("{}…", &instance.zone[0..zone_width-1])
+            format!("{}…", &instance.zone[0..zone_width - 1])
         } else {
             instance.zone.clone()
         };
-        
+
         let network_str = if network.len() > network_width {
-            format!("{}…", &network[0..network_width-1])
+            format!("{}…", &network[0..network_width - 1])
         } else {
             network.to_string()
         };
-        
+
         let internal_ip = instance.internal_ip.as_deref().unwrap_or("-").to_string();
         let external_ip = instance.external_ip.as_deref().unwrap_or("-").to_string();
-            
+
         // Create list item with dynamic width columns
         let item = ListItem::new(Spans::from(vec![
             Span::raw(format!("{:<width$}", instance_name, width = name_width)),
@@ -315,15 +308,27 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
                 Style::default().fg(status_color),
             ),
             Span::raw("│ "),
-            Span::raw(format!("{:<width$}", machine_type, width = machine_type_width)),
+            Span::raw(format!(
+                "{:<width$}",
+                machine_type,
+                width = machine_type_width
+            )),
             Span::raw("│ "),
             Span::raw(format!("{:<width$}", zone, width = zone_width)),
             Span::raw("│ "),
             Span::raw(format!("{:<width$}", network_str, width = network_width)),
             Span::raw("│ "),
-            Span::raw(format!("{:<width$}", internal_ip, width = internal_ip_width)),
+            Span::raw(format!(
+                "{:<width$}",
+                internal_ip,
+                width = internal_ip_width
+            )),
             Span::raw("│ "),
-            Span::raw(format!("{:<width$}", external_ip, width = external_ip_width)),
+            Span::raw(format!(
+                "{:<width$}",
+                external_ip,
+                width = external_ip_width
+            )),
         ]));
 
         items.push(item);
@@ -347,10 +352,10 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
     // Create a ListState with the current selection
     let mut list_state = ratatui::widgets::ListState::default();
     list_state.select(Some(state.selected_index));
-    
+
     // Render the block around the whole area
     frame.render_widget(block.clone(), area);
-    
+
     // Render the header in the header area (with a bit of padding)
     let header_area = instance_chunks[0];
     let padded_header_area = Rect {
@@ -360,7 +365,7 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
         height: header_area.height - 1,
     };
     frame.render_widget(header_paragraph, padded_header_area);
-    
+
     // Render the list with the current selection in the list area
     frame.render_stateful_widget(list, instance_chunks[1], &mut list_state);
 }
