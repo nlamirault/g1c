@@ -44,14 +44,14 @@ impl App {
         // Update UI state with cloud client info
         app.update_ui_info();
         
+        // Initial data fetch
+        app.refresh_data().await?;
+        
         Ok(app)
     }
     
     /// Run the application main loop
     pub async fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> Result<()> {
-        // Initial data fetch
-        self.refresh_data().await?;
-        
         // Main event loop
         while !self.should_quit {
             // Draw UI
@@ -145,6 +145,11 @@ impl App {
         
         // Update UI state with new data
         self.ui_state.update_instances(instances);
+        
+        // Make sure we have a valid selection after updating instances
+        if !self.ui_state.has_valid_selection() {
+            self.ui_state.reset_selection();
+        }
         
         // Update refresh time
         self.last_refresh = Instant::now();

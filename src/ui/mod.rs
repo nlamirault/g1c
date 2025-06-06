@@ -92,9 +92,7 @@ impl UiState {
         }
         
         // Adjust selected index if needed
-        if !self.instances.is_empty() && self.selected_index >= self.instances.len() {
-            self.selected_index = self.instances.len() - 1;
-        }
+        self.ensure_valid_selection();
     }
     
     /// Apply the current filter to the instances
@@ -108,6 +106,9 @@ impl UiState {
             instance.network.as_ref().map_or(false, |n| n.to_lowercase().contains(&filter)) ||
             instance.internal_ip.as_ref().map_or(false, |ip| ip.to_lowercase().contains(&filter))
         });
+        
+        // Make sure selected index is still valid after filtering
+        self.ensure_valid_selection();
     }
     
     /// Toggle help popup
@@ -199,6 +200,23 @@ impl UiState {
         if !self.instances.is_empty() {
             self.selected_index = (self.selected_index + 1) % self.instances.len();
         }
+    }
+    
+    /// Ensure the selected index is valid
+    fn ensure_valid_selection(&mut self) {
+        if !self.instances.is_empty() && self.selected_index >= self.instances.len() {
+            self.selected_index = self.instances.len() - 1;
+        }
+    }
+    
+    /// Check if the current selection is valid
+    pub fn has_valid_selection(&self) -> bool {
+        !self.instances.is_empty() && self.selected_index < self.instances.len()
+    }
+    
+    /// Reset selection to the first item if possible
+    pub fn reset_selection(&mut self) {
+        self.selected_index = if self.instances.is_empty() { 0 } else { 0 };
     }
     
     /// Get the ID of the currently selected instance

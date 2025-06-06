@@ -154,6 +154,15 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
 
 /// Render the instance list
 fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Rect) {
+    // Split the instance list area to have a header area and a list area
+    let instance_chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(2),  // For the header (including padding)
+            Constraint::Min(1),     // For the list items
+        ])
+        .split(area);
+
     // Create a block for the list - make sure to use all available space
     let block = Block::default()
         .borders(Borders::ALL)
@@ -187,7 +196,7 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
     }
 
     // Calculate the available width for the table
-    let available_width = area.width as usize - 16; // Subtract borders, margins, and column separators
+    let available_width = area.width as usize - 20; // Subtract borders, margins, and column separators
     
     // Define column widths proportionally to available space
     let name_width = (available_width * 18) / 100;
@@ -198,8 +207,8 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
     let internal_ip_width = (available_width * 14) / 100;
     let external_ip_width = (available_width * 13) / 100;
 
-    // Create header row for the list
-    let header = ListItem::new(Spans::from(vec![
+    // Create header as a separate widget
+    let header = Spans::from(vec![
         Span::styled(
             format!("{:<width$}", "NAME", width = name_width),
             Style::default()
@@ -248,10 +257,10 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
                 .add_modifier(Modifier::BOLD)
                 .fg(Color::Blue),
         ),
-    ]));
+    ]);
 
-    // Create list items from instances
-    let mut items = vec![header];
+    // Create list items from instances without including header
+    let mut items = vec![];
 
     for (_i, instance) in state.instances.iter().enumerate() {
         // Determine status color
@@ -320,23 +329,40 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
         items.push(item);
     }
 
-    // Create a List widget - ensure it takes all available space
+    // Render the header first
+    let header_paragraph = Paragraph::new(header)
+        .style(Style::default().fg(Color::White))
+        .alignment(ratatui::layout::Alignment::Left);
+
+    // Create a List widget for just the instance items - ensure it takes all available space
     let list = List::new(items)
-        .block(block)
         .highlight_style(
             Style::default()
                 .bg(Color::DarkGray)
                 .add_modifier(Modifier::BOLD),
         )
-        .highlight_symbol("> ")
+        .highlight_symbol("➤ ")
         .style(Style::default().fg(Color::White)); // Add default style for all list items
 
     // Create a ListState with the current selection
     let mut list_state = ratatui::widgets::ListState::default();
     list_state.select(Some(state.selected_index));
     
-    // Render the list with the current selection, ensuring it uses all available space
-    frame.render_stateful_widget(list, area, &mut list_state);
+    // Render the block around the whole area
+    frame.render_widget(block.clone(), area);
+    
+    // Render the header in the header area (with a bit of padding)
+    let header_area = instance_chunks[0];
+    let padded_header_area = Rect {
+        x: header_area.x + 1,
+        y: header_area.y + 1,
+        width: header_area.width - 2,
+        height: header_area.height - 1,
+    };
+    frame.render_widget(header_paragraph, padded_header_area);
+    
+    // Render the list with the current selection in the list area
+    frame.render_stateful_widget(list, instance_chunks[1], &mut list_state);
 }
 
 /// Render the status bar
