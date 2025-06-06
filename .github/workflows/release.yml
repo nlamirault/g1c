@@ -6,17 +6,18 @@ on: # yamllint disable-line rule:truthy
     tags:
       - 'v*'
 
-# https://goreleaser.com/ci/actions/#token-permissions
 permissions:
-  contents: write
-  # packages: write
-  # issues: write
+  contents: read
 
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
     outputs:
-      hashes: ${{ steps.hash.outputs.hashes }}
+      hashes: ${{ steps.binary.outputs.hashes }}
+    # https://goreleaser.com/ci/actions/#token-permissions
+    permissions:
+      contents: write
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,6 +44,7 @@ jobs:
 
           checksum_file=$(echo "$ARTIFACTS" | jq -r '.[] | select (.type=="Checksum") | .path')
           echo "hashes=$(cat $checksum_file | base64 -w0)" >> "$GITHUB_OUTPUT"
+
 
   binary-provenance:
     needs: [goreleaser]

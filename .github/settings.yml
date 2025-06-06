@@ -26,7 +26,7 @@ repository:
   description: A terminal-based UI application for managing Google Cloud instances, inspired by k9s for Kubernetes and e1s for ECS
   homepage: https://github.com/nlamirault/g1c
   topics: google-cloud, tui, ratatui, rust
-  private: true
+  private: false
   has_issues: true
   has_projects: true
   has_wiki: true
