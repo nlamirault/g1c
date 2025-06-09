@@ -7,7 +7,6 @@ project_name: g1c
 
 before:
   hooks:
-    - sudo apt-get install --yes --no-install-recommends musl-tools gcc-mingw-w64-x86-64-win32
     - rustup default stable
     - cargo install --locked cargo-zigbuild
     - cargo fetch --locked
