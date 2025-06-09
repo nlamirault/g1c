@@ -110,7 +110,7 @@ sboms:
 #       - "--yes"
 #     artifacts: checksum
 
-homebrew_casks:
+brews:
   - repository:
       owner: nlamirault
       name: homebrew-tap
