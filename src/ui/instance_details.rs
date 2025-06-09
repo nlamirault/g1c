@@ -1,7 +1,7 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::{Span, Spans},
+    text::{Line, Span},
     widgets::{Block, Borders, Cell, Paragraph, Row, Table, Wrap},
     Frame,
     backend::Backend,
@@ -49,7 +49,7 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area: Rect)
         _ => "❓",
     };
     
-    let title = Paragraph::new(Spans::from(vec![
+    let title = Paragraph::new(Line::from(vec![
         Span::styled(
             format!("Instance: {} ({}) {}", instance.name, instance.id, status_emoji),
             Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
@@ -64,7 +64,7 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area: Rect)
     render_metadata(frame, instance, popup_chunks[2]);
     
     // Render status line
-    let status_line = Paragraph::new(Spans::from(vec![
+    let status_line = Paragraph::new(Line::from(vec![
         Span::raw("Press "),
         Span::styled("ESC", Style::default().add_modifier(Modifier::BOLD)),
         Span::raw(" to close, "),

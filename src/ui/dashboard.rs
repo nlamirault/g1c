@@ -2,7 +2,7 @@ use ratatui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::{Span, Spans},
+    text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
     Frame,
 };
@@ -103,20 +103,20 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
     }
 
     let content = vec![
-        Spans::from(vec![
+        Line::from(vec![
             Span::styled("🔑 Project ID: ", Style::default().fg(Color::Blue)),
             Span::raw(&state.project_id),
         ]),
-        Spans::from(vec![
+        Line::from(vec![
             Span::styled("🌎 Region: ", Style::default().fg(Color::Blue)),
             Span::raw(&state.region),
         ]),
-        Spans::from(vec![
+        Line::from(vec![
             Span::styled("🖥️ GCloud CLI: ", Style::default().fg(Color::Blue)),
             Span::raw(&state.cli_version),
         ]),
-        Spans::from(Span::raw("")),
-        Spans::from(vec![
+        Line::from(Span::raw("")),
+        Line::from(vec![
             Span::styled("📊 Total Instances: ", Style::default().fg(Color::Green)),
             Span::styled(
                 instance_count.to_string(),
@@ -125,7 +125,7 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
                     .add_modifier(Modifier::BOLD),
             ),
         ]),
-        Spans::from(vec![
+        Line::from(vec![
             Span::styled("🟢 Running: ", Style::default().fg(Color::Green)),
             Span::styled(running_count.to_string(), Style::default().fg(Color::Green)),
             Span::raw("  "),
@@ -135,7 +135,7 @@ fn render_overview_panel<B: Backend>(frame: &mut Frame<B>, state: &UiState, area
             Span::styled("❓ Other: ", Style::default().fg(Color::Yellow)),
             Span::styled(other_count.to_string(), Style::default().fg(Color::Yellow)),
         ]),
-        Spans::from(Span::raw("")),
+        Line::from(Span::raw("")),
     ];
 
     let paragraph = Paragraph::new(content)
@@ -169,11 +169,11 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
     // If there are no instances, show a message
     if state.instances.is_empty() {
         let no_instances_text = vec![
-            Spans::from(Span::styled(
+            Line::from(Span::styled(
                 "No instances found",
                 Style::default().fg(Color::Gray),
             )),
-            Spans::from(Span::styled(
+            Line::from(Span::styled(
                 "Press 'r' to refresh",
                 Style::default().fg(Color::DarkGray),
             )),
@@ -201,7 +201,7 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
     let external_ip_width = (available_width * 13) / 100;
 
     // Create header as a separate widget
-    let header = Spans::from(vec![
+    let header = Line::from(vec![
         Span::styled(
             format!("{:<width$}", "NAME", width = name_width),
             Style::default()
@@ -303,7 +303,7 @@ fn render_instance_list<B: Backend>(frame: &mut Frame<B>, state: &UiState, area:
         let external_ip = instance.external_ip.as_deref().unwrap_or("-").to_string();
 
         // Create list item with dynamic width columns
-        let item = ListItem::new(Spans::from(vec![
+        let item = ListItem::new(Line::from(vec![
             Span::raw(format!("{:<width$}", instance_name, width = name_width)),
             Span::raw("│ "),
             Span::styled(
@@ -384,7 +384,7 @@ fn render_status_bar<B: Backend>(frame: &mut Frame<B>, state: &UiState, area: Re
 
     let help_hint = "❓ Press '?' for help";
 
-    let text = Spans::from(vec![
+    let text = Line::from(vec![
         Span::raw(selected_text),
         Span::raw(" | "),
         Span::styled(help_hint, Style::default().fg(Color::DarkGray)),
