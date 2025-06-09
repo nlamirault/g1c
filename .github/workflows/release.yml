@@ -44,6 +44,11 @@ jobs:
       - name: Setup Zig
         uses: mlugg/setup-zig@v2
 
+      # https://github.com/rust-cross/cargo-zigbuild/issues/18#issuecomment-1076428026
+      - name: macOS - Test build with SDKROOT
+        run: |
+          curl -sqL https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz | tar -Jx -C /tmp
+
       - name: Release
         uses: goreleaser/goreleaser-action@v6
         with:
