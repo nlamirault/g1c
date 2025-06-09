@@ -30,15 +30,15 @@ builds:
       - aarch64-unknown-linux-gnu
       - x86_64-apple-darwin
       - aarch64-apple-darwin
-  - builder: rust
-    tool: cargo-xwin
-    command: build
-    flags:
-      - --release
-    id: win-msvc-builds
-    targets:
-      - x86_64-pc-windows-msvc
-      #- aarch64-pc-windows-msvc
+  # - builder: rust
+  #   tool: cargo-xwin
+  #   command: build
+  #   flags:
+  #     - --release
+  #   id: win-msvc-builds
+  #   targets:
+  #     - x86_64-pc-windows-msvc
+  #     #- aarch64-pc-windows-msvc
 
 checksum: # https://goreleaser.com/customization/checksum/
   name_template: "checksums.txt"
