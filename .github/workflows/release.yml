@@ -41,7 +41,8 @@ jobs:
         uses: anchore/sbom-action/download-syft@v0
 
       # Need this for both 'zig build' and 'cargo zigbuild'
-      - uses: mlugg/setup-zig@v1
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
 
       - name: Release
         uses: goreleaser/goreleaser-action@v6
