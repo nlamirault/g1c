@@ -13,7 +13,8 @@ permissions:
 
 jobs:
   goreleaser:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: macos-latest
     outputs:
       hashes: ${{ steps.binary.outputs.hashes }}
       project-name: ${{ steps.hash.outputs.project-name }}
