@@ -30,12 +30,12 @@ jobs:
       attestations: write # needed for provenance
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.12.0
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
         with:
           egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
@@ -43,24 +43,24 @@ jobs:
       #   uses: sigstore/cosign-installer@v3
 
       - name: Download Syft (to generate SBOMs)
-        uses: anchore/sbom-action/download-syft@v0
+        uses: anchore/sbom-action/download-syft@e11c554f704a0b820cbf8c51673f6945e0731532 # v0.20.0
 
       - name: Install stable toolchain for x86 linux
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@9d7e65c320fdb52dcd45ffaa68deb6c02c8754d9 # v1.12.0
         with:
           toolchain: stable
           target: x86_64-unknown-linux-gnu
           cache: false
 
       - name: Install stable toolchain for aarch64 linux
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@9d7e65c320fdb52dcd45ffaa68deb6c02c8754d9 # v1.12.0
         with:
           toolchain: stable
           target: aarch64-unknown-linux-gnu
           cache: false
 
       - name: Install stable toolchain for macOS
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@9d7e65c320fdb52dcd45ffaa68deb6c02c8754d9 # v1.12.0
         with:
           toolchain: stable
           target: aarch64-apple-darwin
@@ -68,13 +68,13 @@ jobs:
 
       # Need this for both 'zig build' and 'cargo zigbuild'
       - name: Setup Zig
-        uses: mlugg/setup-zig@v2
+        uses: mlugg/setup-zig@7dccf5e6d09267c55f815f2db29495f30ba2ebca # v2.0.1
 
       - name: Install cargo-zigbuild
         run: cargo install --locked cargo-zigbuild
 
       - name: Release
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552 # v6.3.0
         with:
           distribution: goreleaser
           version: "~> v2"
@@ -96,7 +96,7 @@ jobs:
 
       # After GoReleaser runs, attest all the files in ./dist/checksums.txt:
       - name: Build provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
         with:
           subject-checksums: ./dist/checksums.txt
 
@@ -116,8 +116,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions: read-all
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        with:
+          egress-policy: audit
+
       - name: Install the verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
+        uses: slsa-framework/slsa-verifier/actions/installer@6657aada084353c65e5dde35394b1a010289fab0 # v2.7.0
 
       - name: Download assets
         env:
