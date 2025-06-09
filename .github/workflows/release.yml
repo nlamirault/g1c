@@ -1,4 +1,6 @@
 ---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# docs: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
 name: Release
 
 on: # yamllint disable-line rule:truthy
@@ -14,18 +16,32 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       hashes: ${{ steps.binary.outputs.hashes }}
+      project-name: ${{ steps.hash.outputs.project-name }}
     # https://goreleaser.com/ci/actions/#token-permissions
     permissions:
-      contents: write
-      packages: write
+      contents: write # needed to write releases
+      id-token: write # needed for keyless signing
+      packages: write # needed for ghcr access
+      attestations: write # needed for provenance
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.12.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # - name: Install Cosign
+      #   uses: sigstore/cosign-installer@v3
+
+      - name: Download Syft (to generate SBOMs)
+        uses: anchore/sbom-action/download-syft@v0
+
       - name: Release
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
@@ -41,10 +57,14 @@ jobs:
           ARTIFACTS: "${{ steps.goreleaser.outputs.artifacts }}"
         run: |
           set -euo pipefail
-
           checksum_file=$(echo "$ARTIFACTS" | jq -r '.[] | select (.type=="Checksum") | .path')
           echo "hashes=$(cat $checksum_file | base64 -w0)" >> "$GITHUB_OUTPUT"
+          echo "project-name=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)" >> "${GITHUB_OUTPUT}"
 
+      # After GoReleaser runs, attest all the files in ./dist/checksums.txt:
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-checksums: ./dist/checksums.txt
 
   binary-provenance:
     needs: [goreleaser]
@@ -63,32 +83,34 @@ jobs:
     permissions: read-all
     steps:
       - name: Install the verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@v2.4.0
+        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
 
       - name: Download assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_NAME: ${{ needs.goreleaser.outputs.project-name }}
           PROVENANCE: "${{ needs.binary-provenance.outputs.provenance-name }}"
         run: |
           set -euo pipefail
-          gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "*.tar.gz"
-          gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "*.zip"
-          gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "$PROVENANCE"
+          echo "Download artifacts from ${GITHUB_REPOSITORY} for ${GITHUB_REF_NAME}"
+          gh -R "${GITHUB_REPOSITORY}" release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}*"
+          gh -R "${GITHUB_REPOSITORY}" release download "${GITHUB_REF_NAME}" -p "${PROVENANCE}"
+          ls
       - name: Verify assets
         env:
           CHECKSUMS: ${{ needs.goreleaser.outputs.hashes }}
           PROVENANCE: "${{ needs.binary-provenance.outputs.provenance-name }}"
         run: |
           set -euo pipefail
-          checksums=$(echo "$CHECKSUMS" | base64 -d)
+          checksums=$(echo "${CHECKSUMS}" | base64 -d)
           while read -r line; do
-              fn=$(echo $line | cut -d ' ' -f2)
-              echo "Verifying $fn"
-              slsa-verifier verify-artifact --provenance-path "$PROVENANCE" \
-                                            --source-uri "github.com/$GITHUB_REPOSITORY" \
-                                            --source-tag "$GITHUB_REF_NAME" \
-                                            "$fn"
-          done <<<"$checksums"
+              fn=$(echo ${line} | cut -d ' ' -f2)
+              echo "Verifying ${fn}"
+              slsa-verifier verify-artifact --provenance-path "${PROVENANCE}" \
+                                            --source-uri "github.com/${GITHUB_REPOSITORY}" \
+                                            --source-tag "${GITHUB_REF_NAME}" \
+                                            "${fn}"
+          done <<<"${checksums}"
 
   # verification-with-cosign:
   #   needs: [goreleaser, image-provenance]

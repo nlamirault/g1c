@@ -1,6 +1,5 @@
 ---
-# See: https://github.com/goreleaser/example-rust/blob/main/.goreleaser.yaml
-
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 
 # Project name should ideally match the project name in your Cargo.toml.
@@ -21,49 +20,68 @@ builds:
       - aarch64-unknown-linux-gnu
       - aarch64-apple-darwin
 
+checksum: # https://goreleaser.com/customization/checksum/
+  name_template: "checksums.txt"
+  algorithm: sha256
+
 # Changelog configuration (will be in the github release).
+# https://goreleaser.com/customization/changelog/
 changelog:
+  use: github-native
   sort: asc
   filters:
     exclude:
-      - "^docs:"
       - "^test:"
       - '^ci:'
 
-universal_binaries:
-  - replace: true
+# https://goreleaser.com/customization/release/
+release:
+  # draft: true
+  replace_existing_draft: true
+  # name_template: "{{ .ProjectName }} {{ .Tag }}"
+  header: |
+    Released on {{ .Date }}
 
 # Enables source archives.
-source:
-  enabled: true
+# source:
+#   enabled: true
 
 # Creates archives for each target.
+# https://goreleaser.com/customization/archive/
 archives:
-  - formats: [ 'tar.gz' ]
-    # this name template makes the OS and Arch compatible with the results of `uname`.
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-    # use zip for windows archives
-    format_overrides:
-      - goos: windows
-        formats: [ 'zip' ]
+  # - formats: [ 'tar.gz' ]
+  #   # this name template makes the OS and Arch compatible with the results of `uname`.
+  #   name_template: >-
+  #     {{ .ProjectName }}_
+  #     {{- title .Os }}_
+  #     {{- if eq .Arch "amd64" }}x86_64
+  #     {{- else if eq .Arch "386" }}i386
+  #     {{- else }}{{ .Arch }}{{ end }}
+  #   # use zip for windows archives
+  #   format_overrides:
+  #     - goos: windows
+  #       formats: [ 'zip' ]
+  - formats: binary
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}_v{{- .Version }}"
+    ids:
+      - g1c
 
 # Creates Linux packages.
-nfpms:
-  - file_name_template: "{{ .ConventionalFileName }}"
-    maintainer: Nicolas Lamirault <nicolas.lamirault@gmail.com>
-    formats:
-      - deb
-      - apk
-      - rpm
+# nfpms:
+#   - file_name_template: "{{ .ConventionalFileName }}"
+#     maintainer: Nicolas Lamirault <nicolas.lamirault@gmail.com>
+#     formats:
+#       - deb
+#       - apk
+#       - rpm
 
-# # SBOMs for the archives.
-# sboms:
-#   - artifacts: archive
+# creates SBOMs of all archives and the source tarball using syft
+# https://goreleaser.com/customization/sbom
+sboms:
+  - id: spdx
+    artifacts: binary
+  # - id: spdx
+  #   artifacts: archive
 
 # # Sign binaries with cosign.
 # signs:
@@ -86,14 +104,3 @@ brews:
     homepage: https://github.com/nlamirault/g1c
     description: g1c is Google Cloud Instances Terminal UI Manager. Inspired by k9s and e1s.
     license: Apache v2
-
-checksum:
-  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
-
-# A footer to add to all releases.
-# release:
-#   footer: >-
-
-#     ---
-
-#     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
