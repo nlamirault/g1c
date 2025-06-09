@@ -43,8 +43,8 @@ labels:
 
 ## KIND
 
-- name: "kind/renovate"
-  description: "Categorizes issue or PR as related to Renovate"
+- name: "kind/maintenance"
+  description: "Categorizes issue or PR as related to maintenance"
   color: "FF0040"
 
 - name: "kind/bug"
@@ -219,6 +219,10 @@ labels:
 
 - name: "dependency/rust"
   description: "Dependency for Rust"
+  color: "6fcb70"
+
+- name: "dependency/docker"
+  description: "Dependency for Docker"
   color: "6fcb70"
 
 
