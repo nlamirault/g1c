@@ -5,22 +5,35 @@ version: 2
 # Project name should ideally match the project name in your Cargo.toml.
 project_name: g1c
 
-before:
-  hooks:
-    - rustup default stable
-    - cargo install --locked cargo-zigbuild
-    - cargo fetch --locked
+# before:
+#   hooks:
+#     - rustup default stable
+#     - cargo install --locked cargo-zigbuild
+#     - cargo fetch --locked
 
 builds:
-  - builder: rust
+  # macOS build (native)
+  - id: "g1c-macos"
+    builder: rust
+    binary: motus
+    targets:
+      - aarch64-apple-darwin # Native target for Apple Silicon
+    dir: "."
+    tool: "cargo"
+    command: build
     flags:
       - --release
+  # Linux build (cross-compiled from macOS)
+  - id: "g1c-linux"
+    builder: rust
+    binary: motus
     targets:
       - x86_64-unknown-linux-gnu
-      - x86_64-apple-darwin
-      - x86_64-pc-windows-gnu
       - aarch64-unknown-linux-gnu
-      - aarch64-apple-darwin
+    dir: "."
+    command: zigbuild
+    flags:
+      - --release
 
 checksum: # https://goreleaser.com/customization/checksum/
   name_template: "checksums.txt"
