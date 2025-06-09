@@ -38,7 +38,7 @@ tracing-subscriber = { version = "0.3.17", features = [
 chrono = "0.4.31"
 
 # Configuration
-directories = "5.0.1"
+directories = "6.0.0"
 
 # String manipulation
 regex = "1.10.2"
