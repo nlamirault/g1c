@@ -1,8 +1,6 @@
-use std::path::Path;
 use anyhow::Result;
-use tracing_subscriber::{self, prelude::*, filter::LevelFilter, Layer};
-
-
+use std::path::Path;
+use tracing_subscriber::{self, filter::LevelFilter, prelude::*, Layer};
 
 /// Initialize logging for the application
 ///
@@ -10,12 +8,16 @@ use tracing_subscriber::{self, prelude::*, filter::LevelFilter, Layer};
 /// - Console output limited to ERROR level to avoid interfering with the TUI
 /// - Optional file logging with configurable level for debugging
 /// - Selectable format (text or JSON) for log output
-pub fn init(log_file: Option<&str>, log_level: Option<&str>, log_format: Option<&str>) -> Result<()> {
+pub fn init(
+    log_file: Option<&str>,
+    log_level: Option<&str>,
+    log_format: Option<&str>,
+) -> Result<()> {
     // Parse the log level
     let level_str = log_level.unwrap_or("info");
     let level_filter = match level_str.to_lowercase().as_str() {
         "trace" => LevelFilter::TRACE,
-        "debug" => LevelFilter::DEBUG, 
+        "debug" => LevelFilter::DEBUG,
         "info" => LevelFilter::INFO,
         "warn" => LevelFilter::WARN,
         "error" => LevelFilter::ERROR,
@@ -34,7 +36,7 @@ pub fn init(log_file: Option<&str>, log_level: Option<&str>, log_format: Option<
 
         // Set up file logging
         let file = std::fs::File::create(log_path)?;
-        
+
         if is_json {
             // Initialize JSON logging
             init_json_logging(file, level_filter);
@@ -49,7 +51,7 @@ pub fn init(log_file: Option<&str>, log_level: Option<&str>, log_format: Option<
 
     // Log initialization message
     tracing::info!("Logging initialized with level {}", level_str);
-    
+
     Ok(())
 }
 
@@ -57,12 +59,11 @@ pub fn init(log_file: Option<&str>, log_level: Option<&str>, log_format: Option<
 fn init_console_logging() {
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::fmt::layer()
-                .with_filter(
-                    tracing_subscriber::filter::EnvFilter::builder()
-                        .with_default_directive(LevelFilter::ERROR.into())
-                        .from_env_lossy()
-                )
+            tracing_subscriber::fmt::layer().with_filter(
+                tracing_subscriber::filter::EnvFilter::builder()
+                    .with_default_directive(LevelFilter::ERROR.into())
+                    .from_env_lossy(),
+            ),
         )
         .init();
 }
@@ -70,13 +71,12 @@ fn init_console_logging() {
 /// Initialize text format logging to file with console error logs
 fn init_text_logging(file: std::fs::File, level: LevelFilter) {
     // Console layer with ERROR level only
-    let console_layer = tracing_subscriber::fmt::layer()
-        .with_filter(
-            tracing_subscriber::filter::EnvFilter::builder()
-                .with_default_directive(LevelFilter::ERROR.into())
-                .from_env_lossy()
-        );
-    
+    let console_layer = tracing_subscriber::fmt::layer().with_filter(
+        tracing_subscriber::filter::EnvFilter::builder()
+            .with_default_directive(LevelFilter::ERROR.into())
+            .from_env_lossy(),
+    );
+
     // File layer with user-specified level
     let file_layer = tracing_subscriber::fmt::layer()
         .with_file(true)
@@ -87,9 +87,9 @@ fn init_text_logging(file: std::fs::File, level: LevelFilter) {
         .with_filter(
             tracing_subscriber::filter::EnvFilter::builder()
                 .with_default_directive(level.into())
-                .from_env_lossy()
+                .from_env_lossy(),
         );
-    
+
     // Register both layers
     tracing_subscriber::registry()
         .with(console_layer)
@@ -100,13 +100,12 @@ fn init_text_logging(file: std::fs::File, level: LevelFilter) {
 /// Initialize JSON format logging to file with console error logs
 fn init_json_logging(file: std::fs::File, level: LevelFilter) {
     // Console layer with ERROR level only
-    let console_layer = tracing_subscriber::fmt::layer()
-        .with_filter(
-            tracing_subscriber::filter::EnvFilter::builder()
-                .with_default_directive(LevelFilter::ERROR.into())
-                .from_env_lossy()
-        );
-    
+    let console_layer = tracing_subscriber::fmt::layer().with_filter(
+        tracing_subscriber::filter::EnvFilter::builder()
+            .with_default_directive(LevelFilter::ERROR.into())
+            .from_env_lossy(),
+    );
+
     // File layer with user-specified level in JSON format
     let file_layer = tracing_subscriber::fmt::layer()
         .json()
@@ -118,9 +117,9 @@ fn init_json_logging(file: std::fs::File, level: LevelFilter) {
         .with_filter(
             tracing_subscriber::filter::EnvFilter::builder()
                 .with_default_directive(level.into())
-                .from_env_lossy()
+                .from_env_lossy(),
         );
-    
+
     // Register both layers
     tracing_subscriber::registry()
         .with(console_layer)

@@ -1,10 +1,10 @@
 use ratatui::{
+    backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{Block, Borders, Cell, Paragraph, Row, Table, Wrap},
     Frame,
-    backend::Backend,
 };
 
 use crate::cloud::Instance;
@@ -13,16 +13,19 @@ use crate::cloud::Instance;
 pub fn render<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area: Rect) {
     // Create a centered popup
     let popup_area = create_centered_rect(80, 80, area);
-    
+
     // Create a block for the popup
     let _block = Block::default()
         .title(format!("Instance Details: {}", instance.name))
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Cyan));
-    
+
     // Render the block
-    frame.render_widget(Block::default().style(Style::default().bg(Color::Black)), popup_area);
-    
+    frame.render_widget(
+        Block::default().style(Style::default().bg(Color::Black)),
+        popup_area,
+    );
+
     // Split the popup into sections
     let popup_chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -34,7 +37,7 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area: Rect)
             Constraint::Length(1),  // Status line
         ])
         .split(popup_area);
-    
+
     // Render title
     // Get status emoji
     let status_emoji = match instance.status.as_str() {
@@ -48,21 +51,24 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area: Rect)
         "PENDING" => "🟡",
         _ => "❓",
     };
-    
-    let title = Paragraph::new(Line::from(vec![
-        Span::styled(
-            format!("Instance: {} ({}) {}", instance.name, instance.id, status_emoji),
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+
+    let title = Paragraph::new(Line::from(vec![Span::styled(
+        format!(
+            "Instance: {} ({}) {}",
+            instance.name, instance.id, status_emoji
         ),
-    ]));
+        Style::default()
+            .fg(Color::Cyan)
+            .add_modifier(Modifier::BOLD),
+    )]));
     frame.render_widget(title, popup_chunks[0]);
-    
+
     // Render basic info table
     render_basic_info(frame, instance, popup_chunks[1]);
-    
+
     // Render description and metadata
     render_metadata(frame, instance, popup_chunks[2]);
-    
+
     // Render status line
     let status_line = Paragraph::new(Line::from(vec![
         Span::raw("Press "),
@@ -92,7 +98,7 @@ fn render_basic_info<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area
         "PENDING" => "🟡",
         _ => "❓",
     };
-    
+
     let rows = vec![
         Row::new(vec![
             Cell::from("Status"),
@@ -105,21 +111,33 @@ fn render_basic_info<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area
             Cell::from("Machine Type"),
             Cell::from(instance.machine_type.clone()),
         ]),
-        Row::new(vec![
-            Cell::from("Zone"),
-            Cell::from(instance.zone.clone()),
-        ]),
+        Row::new(vec![Cell::from("Zone"), Cell::from(instance.zone.clone())]),
         Row::new(vec![
             Cell::from("External IP"),
-            Cell::from(instance.external_ip.clone().unwrap_or_else(|| "None".into())),
+            Cell::from(
+                instance
+                    .external_ip
+                    .clone()
+                    .unwrap_or_else(|| "None".into()),
+            ),
         ]),
         Row::new(vec![
             Cell::from("Internal IP"),
-            Cell::from(instance.internal_ip.clone().unwrap_or_else(|| "None".into())),
+            Cell::from(
+                instance
+                    .internal_ip
+                    .clone()
+                    .unwrap_or_else(|| "None".into()),
+            ),
         ]),
         Row::new(vec![
             Cell::from("Created"),
-            Cell::from(instance.creation_timestamp.clone().unwrap_or_else(|| "Unknown".into())),
+            Cell::from(
+                instance
+                    .creation_timestamp
+                    .clone()
+                    .unwrap_or_else(|| "Unknown".into()),
+            ),
         ]),
     ];
 
@@ -147,25 +165,28 @@ fn render_metadata<B: Backend>(frame: &mut Frame<B>, instance: &Instance, area: 
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(4),  // Description
-            Constraint::Min(0),     // Metadata
+            Constraint::Length(4), // Description
+            Constraint::Min(0),    // Metadata
         ])
         .split(area);
-    
+
     // Render description if available
-    let description = instance.description.clone().unwrap_or_else(|| "No description available".into());
+    let description = instance
+        .description
+        .clone()
+        .unwrap_or_else(|| "No description available".into());
     let description_paragraph = Paragraph::new(description)
         .block(Block::default().borders(Borders::ALL).title("Description"))
         .wrap(Wrap { trim: true });
     frame.render_widget(description_paragraph, chunks[0]);
-    
+
     // Render metadata if available
     let metadata_text = if let Some(metadata) = &instance.metadata {
         format!("{:#?}", metadata)
     } else {
         "No metadata available".to_string()
     };
-    
+
     let metadata_paragraph = Paragraph::new(metadata_text)
         .block(Block::default().borders(Borders::ALL).title("Metadata"))
         .wrap(Wrap { trim: true });

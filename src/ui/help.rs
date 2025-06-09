@@ -1,36 +1,43 @@
 use ratatui::{
+    backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{Block, Borders, Paragraph, Wrap},
     Frame,
-    backend::Backend,
 };
 
 /// Render the help popup
 pub fn render<B: Backend>(frame: &mut Frame<B>, area: Rect) {
     // Create a centered popup
     let popup_area = create_centered_rect(60, 70, area);
-    
+
     // Create a block for the popup
     let block = Block::default()
         .title("Help")
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Yellow));
-    
+
     // Render the block
-    frame.render_widget(Block::default().style(Style::default().bg(Color::Black)), popup_area);
-    
+    frame.render_widget(
+        Block::default().style(Style::default().bg(Color::Black)),
+        popup_area,
+    );
+
     // Create the help text
     let help_text = vec![
         Line::from(Span::styled(
             "GCI - Google Cloud Instances",
-            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD),
         )),
         Line::from(""),
         Line::from(Span::styled(
             "Navigation",
-            Style::default().add_modifier(Modifier::BOLD).fg(Color::Cyan),
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .fg(Color::Cyan),
         )),
         Line::from(vec![
             Span::styled("↑/k", Style::default().add_modifier(Modifier::BOLD)),
@@ -51,7 +58,9 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, area: Rect) {
         Line::from(""),
         Line::from(Span::styled(
             "Filtering and Searching",
-            Style::default().add_modifier(Modifier::BOLD).fg(Color::Cyan),
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .fg(Color::Cyan),
         )),
         Line::from(vec![
             Span::styled("f", Style::default().add_modifier(Modifier::BOLD)),
@@ -64,7 +73,9 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, area: Rect) {
         Line::from(""),
         Line::from(Span::styled(
             "Instance Actions",
-            Style::default().add_modifier(Modifier::BOLD).fg(Color::Cyan),
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .fg(Color::Cyan),
         )),
         Line::from(vec![
             Span::styled("s", Style::default().add_modifier(Modifier::BOLD)),
@@ -85,7 +96,9 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, area: Rect) {
         Line::from(""),
         Line::from(Span::styled(
             "Miscellaneous",
-            Style::default().add_modifier(Modifier::BOLD).fg(Color::Cyan),
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .fg(Color::Cyan),
         )),
         Line::from(vec![
             Span::styled("r", Style::default().add_modifier(Modifier::BOLD)),
@@ -100,11 +113,11 @@ pub fn render<B: Backend>(frame: &mut Frame<B>, area: Rect) {
             Span::raw(" - Quit application"),
         ]),
     ];
-    
+
     let paragraph = Paragraph::new(help_text)
         .block(block)
         .wrap(Wrap { trim: true });
-        
+
     frame.render_widget(paragraph, popup_area);
 }
 

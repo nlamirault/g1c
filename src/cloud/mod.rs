@@ -6,7 +6,6 @@ use tracing::{debug, info};
 
 use crate::config::Config;
 
-
 pub use self::instances::Instance;
 
 /// Google Cloud API client
@@ -68,9 +67,6 @@ impl CloudClient {
     pub async fn restart_instance(&self, instance_id: &str) -> Result<()> {
         instances::restart_instance(&self.project_id, instance_id).await
     }
-
-
-
 
     /// Get the region for this client
     pub fn get_region(&self) -> &str {

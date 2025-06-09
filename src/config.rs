@@ -84,8 +84,6 @@ impl Config {
         ProjectDirs::from("com", "g1c", "g1c").map(|proj_dirs| proj_dirs.config_dir().to_path_buf())
     }
 
-
-
     /// Update config with a new project, if provided
     pub fn with_project(mut self, project: Option<String>) -> Self {
         if let Some(project) = project {

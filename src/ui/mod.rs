@@ -1,4 +1,3 @@
-use std::io;
 use crossterm::{
     event::{DisableMouseCapture, EnableMouseCapture},
     execute,
@@ -8,10 +7,11 @@ use ratatui::{
     backend::{Backend, CrosstermBackend},
     Terminal,
 };
+use std::io;
 
 mod dashboard;
-mod instance_details;
 mod help;
+mod instance_details;
 mod styles;
 
 use crate::cloud::Instance;
@@ -70,7 +70,7 @@ impl UiState {
             cli_version: String::new(),
         }
     }
-    
+
     /// Update cloud information
     pub fn update_cloud_info(&mut self, project_id: String, region: String, cli_version: String) {
         self.project_id = project_id;
@@ -82,39 +82,45 @@ impl UiState {
     pub fn update_instances(&mut self, instances: Vec<Instance>) {
         let _old_len = self.instances.len();
         self.instances = instances;
-        
+
         // Apply any active filters
         if !self.filter.is_empty() {
             self.apply_filter();
         }
-        
+
         // Adjust selected index if needed
         self.ensure_valid_selection();
     }
-    
+
     /// Apply the current filter to the instances
     fn apply_filter(&mut self) {
         let filter = self.filter.to_lowercase();
         self.instances.retain(|instance| {
-            instance.name.to_lowercase().contains(&filter) || 
-            instance.status.to_lowercase().contains(&filter) ||
-            instance.machine_type.to_lowercase().contains(&filter) ||
-            instance.zone.to_lowercase().contains(&filter) ||
-            instance.network.as_ref().map_or(false, |n| n.to_lowercase().contains(&filter)) ||
-            instance.internal_ip.as_ref().map_or(false, |ip| ip.to_lowercase().contains(&filter))
+            instance.name.to_lowercase().contains(&filter)
+                || instance.status.to_lowercase().contains(&filter)
+                || instance.machine_type.to_lowercase().contains(&filter)
+                || instance.zone.to_lowercase().contains(&filter)
+                || instance
+                    .network
+                    .as_ref()
+                    .map_or(false, |n| n.to_lowercase().contains(&filter))
+                || instance
+                    .internal_ip
+                    .as_ref()
+                    .map_or(false, |ip| ip.to_lowercase().contains(&filter))
         });
-        
+
         // Make sure selected index is still valid after filtering
         self.ensure_valid_selection();
     }
-    
+
     /// Toggle help popup
     pub fn toggle_help(&mut self) {
         self.show_help = !self.show_help;
         self.filter_mode = false;
         self.search_mode = false;
     }
-    
+
     /// Toggle filter mode
     pub fn toggle_filter_mode(&mut self) {
         self.filter_mode = !self.filter_mode;
@@ -124,7 +130,7 @@ impl UiState {
             self.filter.clear();
         }
     }
-    
+
     /// Toggle search mode
     pub fn toggle_search_mode(&mut self) {
         self.search_mode = !self.search_mode;
@@ -134,28 +140,32 @@ impl UiState {
             self.search.clear();
         }
     }
-    
+
     /// Check if we're in any input mode (filter or search)
     pub fn is_input_mode(&self) -> bool {
         self.filter_mode || self.search_mode
     }
-    
+
     /// Handle input in filter or search mode
     pub fn handle_input(&mut self, key: crossterm::event::KeyEvent) {
         use crossterm::event::KeyCode;
-        
+
         let input_str = match key.code {
             KeyCode::Char(c) => Some(c.to_string()),
             KeyCode::Backspace => {
-                let input = if self.filter_mode { &mut self.filter } else { &mut self.search };
+                let input = if self.filter_mode {
+                    &mut self.filter
+                } else {
+                    &mut self.search
+                };
                 if !input.is_empty() {
                     input.pop();
                 }
                 None
-            },
+            }
             _ => None,
         };
-        
+
         if let Some(s) = input_str {
             if self.filter_mode {
                 self.filter.push_str(&s);
@@ -164,14 +174,14 @@ impl UiState {
             }
         }
     }
-    
+
     /// Show details for the selected instance
     pub fn show_details(&mut self) {
         if !self.instances.is_empty() {
             self.show_details = true;
         }
     }
-    
+
     /// Close any open popup
     pub fn close_popup(&mut self) {
         self.show_help = false;
@@ -180,7 +190,7 @@ impl UiState {
         self.search_mode = false;
         self.confirmation = None;
     }
-    
+
     /// Navigate to previous item in the list
     pub fn previous_item(&mut self) {
         if !self.instances.is_empty() {
@@ -191,31 +201,31 @@ impl UiState {
             }
         }
     }
-    
+
     /// Navigate to next item in the list
     pub fn next_item(&mut self) {
         if !self.instances.is_empty() {
             self.selected_index = (self.selected_index + 1) % self.instances.len();
         }
     }
-    
+
     /// Ensure the selected index is valid
     fn ensure_valid_selection(&mut self) {
         if !self.instances.is_empty() && self.selected_index >= self.instances.len() {
             self.selected_index = self.instances.len() - 1;
         }
     }
-    
+
     /// Check if the current selection is valid
     pub fn has_valid_selection(&self) -> bool {
         !self.instances.is_empty() && self.selected_index < self.instances.len()
     }
-    
+
     /// Reset selection to the first item if possible
     pub fn reset_selection(&mut self) {
         self.selected_index = if self.instances.is_empty() { 0 } else { 0 };
     }
-    
+
     /// Get the ID of the currently selected instance
     pub fn selected_instance_id(&self) -> Option<String> {
         if self.instances.is_empty() {
@@ -224,8 +234,6 @@ impl UiState {
             Some(self.instances[self.selected_index].id.clone())
         }
     }
-    
-
 }
 
 /// Setup the terminal for TUI
@@ -248,10 +256,10 @@ pub fn restore_terminal() -> io::Result<()> {
 /// Main render function that delegates to the appropriate view
 pub fn render<B: Backend>(frame: &mut ratatui::Frame<B>, state: &UiState) {
     let size = frame.size();
-    
+
     // Render the dashboard (main view)
     dashboard::render(frame, state, size);
-    
+
     // Render popups if needed
     if state.show_help {
         help::render(frame, size);

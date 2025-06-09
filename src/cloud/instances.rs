@@ -88,7 +88,7 @@ impl From<GcloudInstance> for Instance {
         let mut external_ip = None;
         let mut internal_ip = None;
         let mut network = None;
-        
+
         // Extract IP addresses from network interfaces
         if let Some(network_interfaces) = gcloud_instance.network_interfaces {
             for iface in network_interfaces {
@@ -96,7 +96,7 @@ impl From<GcloudInstance> for Instance {
                 if let Some(ip) = iface.network_ip {
                     internal_ip = Some(ip);
                 }
-                
+
                 // External IP
                 if let Some(access_configs) = iface.access_configs {
                     for config in access_configs {
@@ -106,7 +106,7 @@ impl From<GcloudInstance> for Instance {
                         }
                     }
                 }
-                
+
                 // Network
                 if let Some(net) = &iface.network {
                     // Extract the network name from the URL path
@@ -116,40 +116,42 @@ impl From<GcloudInstance> for Instance {
                 }
             }
         }
-        
+
         // Extract metadata
         let metadata = gcloud_instance.metadata.and_then(|meta| {
             meta.items.map(|items| {
-                items.into_iter()
-                     .filter_map(|item| {
-                        match (item.key, item.value) {
-                            (Some(key), Some(value)) => Some((key, value)),
-                            _ => None,
-                        }
+                items
+                    .into_iter()
+                    .filter_map(|item| match (item.key, item.value) {
+                        (Some(key), Some(value)) => Some((key, value)),
+                        _ => None,
                     })
                     .collect::<HashMap<String, String>>()
             })
         });
-        
+
         // Extract tags
-        let tags = gcloud_instance.tags
+        let tags = gcloud_instance
+            .tags
             .and_then(|tags| tags.items)
             .unwrap_or_default();
-        
+
         // Extract zone from zone URL
-        let zone = gcloud_instance.zone
+        let zone = gcloud_instance
+            .zone
             .split('/')
             .last()
             .unwrap_or("unknown")
             .to_string();
-        
+
         // Extract machine type from machine type URL
-        let machine_type = gcloud_instance.machine_type
+        let machine_type = gcloud_instance
+            .machine_type
             .split('/')
             .last()
             .unwrap_or("unknown")
             .to_string();
-        
+
         Self {
             id: gcloud_instance.id,
             name: gcloud_instance.name,
@@ -170,203 +172,217 @@ impl From<GcloudInstance> for Instance {
 /// List all instances in a project
 pub async fn list_instances(project_id: &str, json_output: bool) -> Result<Vec<Instance>> {
     info!("Listing instances for project: {}", project_id);
-    
+
     // Build command
     let mut cmd = Command::new("gcloud");
-    cmd.args([
-        "compute", 
-        "instances", 
-        "list", 
-        "--project", project_id,
-    ]);
-    
+    cmd.args(["compute", "instances", "list", "--project", project_id]);
+
     // Add format flags
     if json_output {
         cmd.args(["--format", "json"]);
     }
-    
+
     // Execute command
     let output = cmd
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
         .context("Failed to execute gcloud compute instances list command")?;
-    
+
     // Check if command was successful
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!("Failed to list instances: {}", error));
     }
-    
+
     // Parse JSON output
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let gcloud_instances: Vec<GcloudInstance> = serde_json::from_str(&stdout)
-        .context("Failed to parse instance list JSON")?;
-    
+    let gcloud_instances: Vec<GcloudInstance> =
+        serde_json::from_str(&stdout).context("Failed to parse instance list JSON")?;
+
     // Convert to our model
-    let instances: Vec<Instance> = gcloud_instances.into_iter()
-        .map(Instance::from)
-        .collect();
-    
+    let instances: Vec<Instance> = gcloud_instances.into_iter().map(Instance::from).collect();
+
     debug!("Found {} instances", instances.len());
-    
+
     Ok(instances)
 }
 
 /// Get a specific instance by name or ID
-pub async fn get_instance(project_id: &str, instance_id: &str, json_output: bool) -> Result<Instance> {
+pub async fn get_instance(
+    project_id: &str,
+    instance_id: &str,
+    json_output: bool,
+) -> Result<Instance> {
     info!("Getting instance {} in project {}", instance_id, project_id);
-    
+
     // First we need to find which zone the instance is in
     let instances = list_instances(project_id, json_output).await?;
-    
+
     // Find the instance by ID or name
-    let instance = instances.into_iter()
+    let instance = instances
+        .into_iter()
         .find(|i| i.id == instance_id || i.name == instance_id)
         .ok_or_else(|| anyhow::anyhow!("Instance not found: {}", instance_id))?;
-    
+
     // Now get detailed information
     let mut cmd = Command::new("gcloud");
     cmd.args([
-        "compute", 
-        "instances", 
-        "describe", 
+        "compute",
+        "instances",
+        "describe",
         &instance.name,
-        "--zone", &instance.zone,
-        "--project", project_id,
+        "--zone",
+        &instance.zone,
+        "--project",
+        project_id,
     ]);
-    
+
     // Add format flags
     if json_output {
         cmd.args(["--format", "json"]);
     }
-    
+
     // Execute command
     let output = cmd
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
         .context("Failed to execute gcloud compute instances describe command")?;
-    
+
     // Check if command was successful
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!("Failed to get instance details: {}", error));
     }
-    
+
     // Parse JSON output
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let gcloud_instance: GcloudInstance = serde_json::from_str(&stdout)
-        .context("Failed to parse instance details JSON")?;
-    
+    let gcloud_instance: GcloudInstance =
+        serde_json::from_str(&stdout).context("Failed to parse instance details JSON")?;
+
     Ok(Instance::from(gcloud_instance))
 }
 
 /// Start an instance
 pub async fn start_instance(project_id: &str, instance_id: &str) -> Result<()> {
-    info!("Starting instance {} in project {}", instance_id, project_id);
-    
+    info!(
+        "Starting instance {} in project {}",
+        instance_id, project_id
+    );
+
     // First we need to find which zone the instance is in
     let instance = get_instance(project_id, instance_id, true).await?;
-    
+
     // Build command
     let mut cmd = Command::new("gcloud");
     cmd.args([
-        "compute", 
-        "instances", 
-        "start", 
+        "compute",
+        "instances",
+        "start",
         &instance.name,
-        "--zone", &instance.zone,
-        "--project", project_id,
+        "--zone",
+        &instance.zone,
+        "--project",
+        project_id,
         "--quiet", // Disable interactive prompts
     ]);
-    
+
     // Execute command
     let output = cmd
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
         .context("Failed to execute gcloud compute instances start command")?;
-    
+
     // Check if command was successful
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!("Failed to start instance: {}", error));
     }
-    
+
     info!("Successfully started instance {}", instance.name);
     Ok(())
 }
 
 /// Stop an instance
 pub async fn stop_instance(project_id: &str, instance_id: &str) -> Result<()> {
-    info!("Stopping instance {} in project {}", instance_id, project_id);
-    
+    info!(
+        "Stopping instance {} in project {}",
+        instance_id, project_id
+    );
+
     // First we need to find which zone the instance is in
     let instance = get_instance(project_id, instance_id, true).await?;
-    
+
     // Build command
     let mut cmd = Command::new("gcloud");
     cmd.args([
-        "compute", 
-        "instances", 
-        "stop", 
+        "compute",
+        "instances",
+        "stop",
         &instance.name,
-        "--zone", &instance.zone,
-        "--project", project_id,
+        "--zone",
+        &instance.zone,
+        "--project",
+        project_id,
         "--quiet", // Disable interactive prompts
     ]);
-    
+
     // Execute command
     let output = cmd
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
         .context("Failed to execute gcloud compute instances stop command")?;
-    
+
     // Check if command was successful
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!("Failed to stop instance: {}", error));
     }
-    
+
     info!("Successfully stopped instance {}", instance.name);
     Ok(())
 }
 
 /// Restart an instance (stop then start)
 pub async fn restart_instance(project_id: &str, instance_id: &str) -> Result<()> {
-    info!("Restarting instance {} in project {}", instance_id, project_id);
-    
+    info!(
+        "Restarting instance {} in project {}",
+        instance_id, project_id
+    );
+
     // First we need to find which zone the instance is in
     let instance = get_instance(project_id, instance_id, true).await?;
-    
+
     // Build command
     let mut cmd = Command::new("gcloud");
     cmd.args([
-        "compute", 
-        "instances", 
+        "compute",
+        "instances",
         "reset", // reset is like a power cycle/restart
         &instance.name,
-        "--zone", &instance.zone,
-        "--project", project_id,
+        "--zone",
+        &instance.zone,
+        "--project",
+        project_id,
         "--quiet", // Disable interactive prompts
     ]);
-    
+
     // Execute command
     let output = cmd
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
         .context("Failed to execute gcloud compute instances reset command")?;
-    
+
     // Check if command was successful
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!("Failed to restart instance: {}", error));
     }
-    
+
     info!("Successfully restarted instance {}", instance.name);
     Ok(())
 }
-

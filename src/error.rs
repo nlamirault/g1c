@@ -16,4 +16,3 @@ impl From<serde_json::Error> for GciError {
         GciError::Config(format!("JSON error: {}", err))
     }
 }
-
