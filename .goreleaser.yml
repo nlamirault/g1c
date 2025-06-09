@@ -7,38 +7,21 @@ project_name: g1c
 
 before:
   hooks:
+    - sudo apt-get install --yes --no-install-recommends musl-tools gcc-mingw-w64-x86-64-win32
     - rustup default stable
-    - rustup component add llvm-tools
     - cargo install --locked cargo-zigbuild
-    - cargo install --locked cargo-xwin
-    - rustup target add aarch64-apple-darwin
-    - rustup target add aarch64-unknown-linux-gnu
-    - rustup target add x86_64-apple-darwin
-    - rustup target add x86_64-pc-windows-msvc
-    - rustup target add x86_64-unknown-linux-gnu
     - cargo fetch --locked
 
 builds:
   - builder: rust
-    tool: cargo-zigbuild
-    command: zigbuild
     flags:
       - --release
-    id: linux-gnu-builds
     targets:
       - x86_64-unknown-linux-gnu
-      - aarch64-unknown-linux-gnu
       - x86_64-apple-darwin
+      - x86_64-pc-windows-gnu
+      - aarch64-unknown-linux-gnu
       - aarch64-apple-darwin
-  # - builder: rust
-  #   tool: cargo-xwin
-  #   command: build
-  #   flags:
-  #     - --release
-  #   id: win-msvc-builds
-  #   targets:
-  #     - x86_64-pc-windows-msvc
-  #     #- aarch64-pc-windows-msvc
 
 checksum: # https://goreleaser.com/customization/checksum/
   name_template: "checksums.txt"
