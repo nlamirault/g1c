@@ -9,7 +9,7 @@ readme = "README.md"
 
 [dependencies]
 # Terminal UI
-ratatui = "0.23.0"
+ratatui = "0.29.0"
 crossterm = "0.27.0"
 
 # Command line arguments parsing
