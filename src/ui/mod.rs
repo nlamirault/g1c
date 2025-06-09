@@ -22,9 +22,6 @@ pub enum Action {
     Start,
     Stop,
     Restart,
-    Delete,
-    Ssh,
-    None,
 }
 
 /// UI state that manages all UI components
@@ -228,14 +225,7 @@ impl UiState {
         }
     }
     
-    /// Show confirmation dialog for an action
-    pub fn confirm_action(&mut self) -> bool {
-        if let Some(_action) = self.confirmation.take() {
-            true
-        } else {
-            false
-        }
-    }
+
 }
 
 /// Setup the terminal for TUI

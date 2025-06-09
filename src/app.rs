@@ -195,14 +195,7 @@ impl App {
             },
             Action::Restart => {
                 self.cloud_client.restart_instance(&instance_id).await?;
-            },
-            Action::Delete => {
-                // For dangerous operations, we should confirm first
-                if self.ui_state.confirm_action() {
-                    self.cloud_client.delete_instance(&instance_id).await?;
-                }
-            },
-            _ => {}
+            }
         }
         
         // Refresh data after action

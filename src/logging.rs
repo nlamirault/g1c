@@ -2,14 +2,7 @@ use std::path::Path;
 use anyhow::Result;
 use tracing_subscriber::{self, prelude::*, filter::LevelFilter, Layer};
 
-/// Log format options
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum LogFormat {
-    /// Text format (human-readable)
-    Text,
-    /// JSON format (machine-readable)
-    Json,
-}
+
 
 /// Initialize logging for the application
 ///

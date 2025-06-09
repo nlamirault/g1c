@@ -370,38 +370,3 @@ pub async fn restart_instance(project_id: &str, instance_id: &str) -> Result<()>
     Ok(())
 }
 
-/// Delete an instance
-pub async fn delete_instance(project_id: &str, instance_id: &str) -> Result<()> {
-    info!("Deleting instance {} in project {}", instance_id, project_id);
-    
-    // First we need to find which zone the instance is in
-    let instance = get_instance(project_id, instance_id, true).await?;
-    
-    // Build command
-    let mut cmd = Command::new("gcloud");
-    cmd.args([
-        "compute", 
-        "instances", 
-        "delete", 
-        &instance.name,
-        "--zone", &instance.zone,
-        "--project", project_id,
-        "--quiet", // Disable interactive prompts
-    ]);
-    
-    // Execute command
-    let output = cmd
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .output()
-        .context("Failed to execute gcloud compute instances delete command")?;
-    
-    // Check if command was successful
-    if !output.status.success() {
-        let error = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow::anyhow!("Failed to delete instance: {}", error));
-    }
-    
-    info!("Successfully deleted instance {}", instance.name);
-    Ok(())
-}

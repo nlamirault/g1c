@@ -6,7 +6,7 @@ use tracing::{debug, info};
 
 use crate::config::Config;
 
-pub use self::auth::get_gcloud_version;
+
 pub use self::instances::Instance;
 
 /// Google Cloud API client
@@ -69,15 +69,8 @@ impl CloudClient {
         instances::restart_instance(&self.project_id, instance_id).await
     }
 
-    /// Delete an instance
-    pub async fn delete_instance(&self, instance_id: &str) -> Result<()> {
-        instances::delete_instance(&self.project_id, instance_id).await
-    }
 
-    /// Get detailed information about an instance
-    pub async fn get_instance(&self, instance_id: &str) -> Result<Instance> {
-        instances::get_instance(&self.project_id, instance_id, self.json_output).await
-    }
+
 
     /// Get the region for this client
     pub fn get_region(&self) -> &str {

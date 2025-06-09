@@ -84,25 +84,7 @@ impl Config {
         ProjectDirs::from("com", "g1c", "g1c").map(|proj_dirs| proj_dirs.config_dir().to_path_buf())
     }
 
-    /// Save configuration to the default location
-    pub fn save(&self) -> Result<()> {
-        let config_dir = Self::config_dir().context("Failed to determine config directory")?;
 
-        // Create directory if it doesn't exist
-        fs::create_dir_all(&config_dir).context(format!(
-            "Failed to create config directory: {:?}",
-            config_dir
-        ))?;
-
-        let config_file = config_dir.join("config.toml");
-        let config_str = toml::to_string(self).context("Failed to serialize config to TOML")?;
-
-        fs::write(&config_file, config_str)
-            .context(format!("Failed to write config to file: {:?}", config_file))?;
-
-        info!("Configuration saved to {:?}", config_file);
-        Ok(())
-    }
 
     /// Update config with a new project, if provided
     pub fn with_project(mut self, project: Option<String>) -> Self {
