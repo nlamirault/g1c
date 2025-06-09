@@ -1,5 +1,10 @@
 # g1c - Google Cloud Instances Terminal UI Manager
 
+[![GitHub Release](https://img.shields.io/github/release/nlamirault/g1c.svg?logo=github)](https://github.com/nlamirault/g1c/releases)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/nlamirault/g1c/blob/main/LICENSE)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/nlamirault/g1c/badge)](https://scorecard.dev/viewer/?uri=github.com/nlamirault/g1c)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/10711/badge)](https://bestpractices.coreinfrastructure.org/projects/10711)
+
 A terminal user interface for monitoring and managing Google Cloud Instances, inspired by
 [k9s](https://github.com/derailed/k9s) for Kubernetes, [e1s](https://github.com/keidarcy/e1s) for AWS EC2.
 
