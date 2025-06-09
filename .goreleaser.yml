@@ -110,12 +110,12 @@ sboms:
 #       - "--yes"
 #     artifacts: checksum
 
-brews:
-  - repository:
-      owner: nlamirault
-      name: homebrew-tap
-      token: "{{ .Env.GH_PAT }}"
-    directory: Formula
-    homepage: https://github.com/nlamirault/g1c
-    description: g1c is Google Cloud Instances Terminal UI Manager. Inspired by k9s and e1s.
-    license: Apache v2
+# brews:
+#   - repository:
+#       owner: nlamirault
+#       name: homebrew-tap
+#       token: "{{ .Env.GH_PAT }}"
+#     directory: Formula
+#     homepage: https://github.com/nlamirault/g1c
+#     description: g1c is Google Cloud Instances Terminal UI Manager. Inspired by k9s and e1s.
+#     license: Apache v2
