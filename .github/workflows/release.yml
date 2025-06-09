@@ -20,7 +20,7 @@ jobs:
     # runs-on: ubuntu-latest
     runs-on: macos-latest
     outputs:
-      hashes: ${{ steps.binary.outputs.hashes }}
+      hashes: ${{ steps.hash.outputs.hashes }}
       project-name: ${{ steps.hash.outputs.project-name }}
     # https://goreleaser.com/ci/actions/#token-permissions
     permissions:
@@ -85,7 +85,7 @@ jobs:
           GH_PAT: ${{ secrets.PUBLISHER_TOKEN }}
 
       - name: Generate binary hashes
-        id: binary
+        id: hash
         env:
           ARTIFACTS: "${{ steps.goreleaser.outputs.artifacts }}"
         run: |
@@ -95,7 +95,8 @@ jobs:
           echo "project-name=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)" >> "${GITHUB_OUTPUT}"
 
       # After GoReleaser runs, attest all the files in ./dist/checksums.txt:
-      - uses: actions/attest-build-provenance@v2
+      - name: Build provenance
+        uses: actions/attest-build-provenance@v2
         with:
           subject-checksums: ./dist/checksums.txt
 
