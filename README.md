@@ -62,30 +62,6 @@ g1c --region us-central1   # or -g us-central1
 g1c --refresh 5   # or -r 5
 ```
 
-### Using Make
-
-The project includes a Makefile for common operations:
-
-```bash
-# Build the project
-make build
-
-# Run the application
-make run
-
-# Build release version
-make release
-
-# Install the application
-make install
-
-# Check environment
-make check-env
-
-# Show help
-make help
-```
-
 ## Keyboard Shortcuts
 
 | Key                | Action                    |
@@ -134,30 +110,42 @@ You can check your authentication status with:
 make check-env
 ```
 
-## Development
+## SLSA
 
-### Requirements
+All _artifacts_ provided by this repository meet [SLSA L3](https://slsa.dev/spec/v1.0/levels#build-l3)
 
-- Rust 1.75.0 or higher
-- Google Cloud SDK
+### Verify SLSA provenance
 
-### Building
+Using the [Github CLI]():
 
-```bash
-# Check code
-make check
+```shell
+$ gh attestation verify --owner nlamirault e2c_darwin_arm64_v0.1.2
+gh attestation verify --owner nlamirault g1c_0.1.16_darwin_arm64.sbom.json
+Loaded digest sha256:b8a7adf91b122b488118d50cddfb808cd161ba04f989de5a5f434f5fe85773d3 for file://g1c_0.1.16_darwin_arm64.sbom.json
+Loaded 1 attestation from GitHub API
+✓ Verification succeeded!
 
-# Format code
-make fmt
+sha256:b8a7adf91b122b488118d50cddfb808cd161ba04f989de5a5f434f5fe85773d3 was attested by:
+REPO            PREDICATE_TYPE                  WORKFLOW
+nlamirault/g1c  https://slsa.dev/provenance/v1  .github/workflows/release.yml@refs/tags/v0.1.16
+```
 
-# Run linter
-make lint
+## SBOM
 
-# Run tests
-make test
+You could use [trivy](https://trivy.dev) to read SBOM file:
 
-# Generate documentation
-make docs
+```shell
+$ trivy sbom
+2025-06-09T16:57:57+02:00       INFO     [vuln] Vulnerability scanning is enabled
+2025-06-09T16:57:57+02:00       INFO     Detected SBOM format    format="spdx-json"
+2025-06-09T16:57:57+02:00       INFO     Number of language-specific files       num=0
+```
+
+or with [grype](https://github.com/anchore/grype):
+
+```shell
+$ cat ./g1c_0.1.16_darwin_arm64.sbom.json | grype
+No vulnerabilities found
 ```
 
 ## Contributing
