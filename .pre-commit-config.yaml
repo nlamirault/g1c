@@ -1,10 +1,104 @@
+# SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+---
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+default_install_hook_types:
+- pre-commit
+- pre-push
+- commit-msg
+
+default_stages:
+- pre-commit
+- pre-push
+- commit-msg
+
 repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: check-merge-conflict
+    stages: [pre-commit]
+  - id: debug-statements
+    stages: [pre-commit]
+  - id: check-builtin-literals
+    stages: [pre-commit]
+  - id: check-added-large-files
+    stages: [pre-commit]
+  - id: check-executables-have-shebangs
+    stages: [pre-commit]
+  - id: detect-private-key
+    stages: [pre-commit]
+  - id: end-of-file-fixer
+    stages: [pre-commit]
+  - id: mixed-line-ending
+    stages: [pre-commit]
+  - id: trailing-whitespace
+    stages: [pre-commit]
+- repo: https://github.com/compilerla/conventional-pre-commit
+  rev: v4.2.0
+  hooks:
+  - id: conventional-pre-commit
+    stages: [commit-msg]
+    args: [--strict, --force-scope, build, chore, ci, docs, refactor, perf, test]
+- repo: https://github.com/Lucas-C/pre-commit-hooks
+  rev: v1.5.5
+  hooks:
+  - id: insert-license
+    stages: [pre-commit]
+    files: (Makefile|\.mk|\.yaml|\.yml|\.sh)
+    args:
+    - --license-filepath
+    - hack/config/LICENSE
+    # - --remove-header
+  - id: insert-license
+    stages: [pre-commit]
+    description: Insert license header into Jinja templates
+    files: (\.rs)
+    args:
+    - --license-filepath
+    - hack/config/LICENSE
+    - --comment-style
+    - "//"
+- repo: https://github.com/jumanjihouse/pre-commit-hooks
+  rev: 3.0.0
+  hooks:
+  - id: shellcheck
+    stages: [pre-commit]
+    exclude: hack/hooks/pre-commit.git-crypt.sh
+  - id: shfmt
+    stages: [pre-commit]
+    args: ["-i 4"]
+- repo: https://github.com/spinergie/pre-commit-dprint
+  rev: v0.50.0
+  hooks:
+  - id: dprint
+    stages: [pre-commit]
 - repo: https://github.com/gitleaks/gitleaks
   rev: v8.16.3
   hooks:
   - id: gitleaks
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+- repo: https://github.com/crate-ci/typos
+  rev: v1.26.0
   hooks:
-  - id: end-of-file-fixer
-  - id: trailing-whitespace
+    - id: typos
+
+- repo: local
+  hooks:
+    - id: cargo-fmt
+      name: cargo fmt
+      entry: cargo fmt --
+      language: system
+      types: [rust]
+      pass_filenames: false # This makes it a lot faster
+
+- repo: local
+  hooks:
+    - id: cargo-clippy
+      name: cargo clippy
+      language: system
+      types: [rust]
+      pass_filenames: false
+      entry: cargo clippy --all-targets --all-features -- -D warnings
