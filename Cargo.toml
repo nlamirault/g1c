@@ -13,7 +13,7 @@ ratatui = "0.23.0"
 crossterm = "0.29.0"
 
 # Command line arguments parsing
-clap = { version = "4.5.42", features = ["derive"] }
+clap = { version = "4.5.46", features = ["derive"] }
 
 # Async runtime
 tokio = { version = "1.47.0", features = ["full"] }
