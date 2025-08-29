@@ -29,7 +29,7 @@ toml = "0.9.4"
 
 # Logging
 tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.17", features = [
+tracing-subscriber = { version = "0.3.20", features = [
   "json",
   "std",
   "registry",
