@@ -19,7 +19,7 @@ clap = { version = "4.5.42", features = ["derive"] }
 tokio = { version = "1.47.0", features = ["full"] }
 
 # Error handling
-anyhow = "1.0.71"
+anyhow = "1.0.100"
 thiserror = "2.0.12"
 
 # Serialization/deserialization
