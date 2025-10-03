@@ -35,7 +35,7 @@ tracing-subscriber = { version = "0.3.17", features = [
   "registry",
   "env-filter",
 ] }
-chrono = "0.4.31"
+chrono = "0.4.42"
 
 # Configuration
 directories = "6.0.0"
