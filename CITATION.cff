@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: g1c
+message: >-
+  A terminal-based UI application for managing Google Cloud instances
+type: software
+authors:
+  - given-names: Nicolas
+    family-names: Lamirault
+    email: nicolas.lamirault@gmail.com
+abstract: >-
+  A terminal-based UI application for managing AWS EC2 instances.
+keywords:
+  - terminal ui
+  - aws ec2
+license: Apache-2.0
+repository-code: 'https://github.com/nlamirault/g1c'
+url: 'https://github.com/nlamirault/g1c'
