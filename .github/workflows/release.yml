@@ -66,6 +66,11 @@ jobs:
           target: aarch64-apple-darwin
           cache: false
 
+      - name: Setup GO
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 'stable'
+
       # Need this for both 'zig build' and 'cargo zigbuild'
       - name: Setup Zig
         uses: mlugg/setup-zig@7dccf5e6d09267c55f815f2db29495f30ba2ebca # v2.0.1
