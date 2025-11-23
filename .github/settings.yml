@@ -211,6 +211,10 @@ labels:
   description: "Github"
   color: "cc317c"
 
+- name: "area/rust"
+  description: "Rust"
+  color: "cc317c"
+
 ## DEPENDENCY
 
 - name: "dependency/github"
