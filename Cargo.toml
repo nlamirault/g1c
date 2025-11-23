@@ -1,6 +1,6 @@
 [package]
 name = "g1c"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "A terminal UI for monitoring Google Cloud Instances, inspired by k9s, e1s, and e2c"
 authors = ["Your Name <your.email@example.com>"]
