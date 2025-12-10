@@ -43,7 +43,7 @@ jobs:
       #   uses: sigstore/cosign-installer@v3
 
       - name: Download Syft (to generate SBOMs)
-        uses: anchore/sbom-action/download-syft@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
+        uses: anchore/sbom-action/download-syft@43a17d6e7add2b5535efe4dcae9952337c479a93 # v0.20.11
 
       - name: Install stable toolchain for x86 linux
         uses: actions-rust-lang/setup-rust-toolchain@1780873c7b576612439a134613cc4cc74ce5538c # v1.15.2
